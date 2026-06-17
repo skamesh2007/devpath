@@ -31,6 +31,8 @@ import {
   Target,
 } from "lucide-react"
 
+import DashboardLoading from "@/components/loading/DashboardLoading"
+
 export default function DashboardPage() {
   const user = useAuthStore((state) => state.user)
 
@@ -103,11 +105,7 @@ export default function DashboardPage() {
     : []
 
   if (loading) {
-    return (
-      <div className="container mx-auto p-6">
-        <p className="text-muted-foreground">Loading dashboard...</p>
-      </div>
-    )
+    return <DashboardLoading />
   }
 
   return (

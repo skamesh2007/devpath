@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { SiLeetcode } from "react-icons/si"
 import { ExternalLink, Settings2 } from "lucide-react"
 import { getMyLeetCodeStats, getLeetCodeUsername } from "@/services/leetcodeService"
 import { LeetCodeStatsResponse } from "@/types/leetcode"
 
-// ─── Difficulty badge ─────────────────────────────────────────────────────────
+import LeetCodeLoading from "@/components/loading/LeetCodeLoading"
 
 function DiffBadge({
   label,
@@ -19,11 +20,11 @@ function DiffBadge({
   color: string
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border bg-card p-5 shadow-sm">
-      <span className={`mb-1 text-xs font-semibold uppercase tracking-widest ${color}`}>
+    <div className="flex flex-col items-center justify-center rounded-2xl border bg-card p-3 shadow-sm sm:p-5">
+      <span className={`mb-1 text-[10px] font-semibold uppercase tracking-widest sm:text-xs ${color}`}>
         {label}
       </span>
-      <span className="text-3xl font-bold">{count}</span>
+      <span className="text-2xl font-bold sm:text-3xl">{count}</span>
     </div>
   )
 }
@@ -65,24 +66,20 @@ export default function LeetCodePage() {
   // ── Loading ────────────────────────────────────────────────────────────────
 
   if (loading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
-      </div>
-    )
+    return <LeetCodeLoading />
   }
 
   // ── Not connected ──────────────────────────────────────────────────────────
 
   if (!hasLinked) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 p-6 text-center">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted">
-          <SiLeetcode className="h-10 w-10 text-muted-foreground" />
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 p-4 text-center sm:p-6">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted sm:h-20 sm:w-20">
+          <SiLeetcode className="h-8 w-8 text-muted-foreground sm:h-10 sm:w-10" />
         </div>
 
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold">LeetCode not connected</h1>
+          <h1 className="text-xl font-bold sm:text-2xl">LeetCode not connected</h1>
           <p className="text-sm text-muted-foreground">
             Link your LeetCode account to track your progress here.
           </p>
@@ -102,16 +99,16 @@ export default function LeetCodePage() {
   // ── Stats ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 p-6 pb-28">
+    <div className="mx-auto max-w-2xl space-y-6 p-4 pb-24 sm:p-6 sm:pb-28">
 
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFA116]/10">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FFA116]/10">
             <SiLeetcode className="h-6 w-6 text-[#FFA116]" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold">{stats?.username}</h1>
+          <div className="min-w-0">
+            <h1 className="truncate text-xl font-bold sm:text-2xl">{stats?.username}</h1>
             <p className="text-sm text-muted-foreground">
               Global Rank&nbsp;
               <span className="font-semibold text-foreground">
@@ -122,15 +119,15 @@ export default function LeetCodePage() {
         </div>
 
         {/* Link to LeetCode profile */}
-        <a
+        <Link
           href={`https://leetcode.com/${stats?.username}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-muted"
+          className="flex items-center justify-center gap-1.5 self-start rounded-xl border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-muted sm:self-auto"
         >
           <ExternalLink className="h-3.5 w-3.5" />
           View on LeetCode
-        </a>
+        </Link>
       </div>
 
       {/* Solve counts */}
@@ -138,12 +135,12 @@ export default function LeetCodePage() {
         <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           Problems Solved
         </p>
-        <div className="grid grid-cols-4 gap-3">
-          <div className="col-span-4 flex flex-col items-center justify-center rounded-2xl border bg-card p-5 shadow-sm sm:col-span-1">
-            <span className="mb-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="col-span-2 flex flex-col items-center justify-center rounded-2xl border bg-card p-3 shadow-sm sm:col-span-1 sm:p-5">
+            <span className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:text-xs">
               Total
             </span>
-            <span className="text-3xl font-bold">{stats?.totalSolved}</span>
+            <span className="text-2xl font-bold sm:text-3xl">{stats?.totalSolved}</span>
           </div>
           <DiffBadge label="Easy"   count={stats?.easySolved   ?? 0} color="text-emerald-500" />
           <DiffBadge label="Medium" count={stats?.mediumSolved ?? 0} color="text-amber-500"   />
@@ -164,17 +161,17 @@ export default function LeetCodePage() {
               return (
                 <div
                   key={i}
-                  className="flex items-center justify-between gap-4 border-b px-4 py-3 last:border-b-0 hover:bg-muted/40 transition"
+                  className="flex items-center justify-between gap-3 border-b px-3 py-3 last:border-b-0 hover:bg-muted/40 transition sm:gap-4 sm:px-4"
                 >
                   <div className="min-w-0">
-                    <a
+                    <Link
                       href={`https://leetcode.com/problems/${sub.titleSlug}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="truncate font-medium hover:underline"
+                      className="block truncate font-medium hover:underline"
                     >
                       {sub.title}
-                    </a>
+                    </Link>
                     <p className="text-xs text-muted-foreground">{sub.lang}</p>
                   </div>
 
