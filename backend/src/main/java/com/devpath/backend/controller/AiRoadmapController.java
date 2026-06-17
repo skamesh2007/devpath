@@ -1,8 +1,10 @@
 package com.devpath.backend.controller;
 
-import com.devpath.backend.dto.ProfileRequest;
-import com.devpath.backend.service.AiRoadmapService;
+import com.devpath.backend.dto.GenerateRoadmapRequest;
+import com.devpath.backend.dto.RoadmapResponse;
+import com.devpath.backend.service.AIRoadmapManagerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -10,10 +12,18 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AiRoadmapController {
 
-    private final AiRoadmapService aiRoadmapService;
+    private final AIRoadmapManagerService aiRoadmapManagerService;
 
     @PostMapping("/generate")
-    public String generateRoadmap(@RequestBody ProfileRequest request) {
-        return aiRoadmapService.generateRoadmap(request);
+    public RoadmapResponse generateRoadmap(
+            @RequestBody GenerateRoadmapRequest request,
+            Authentication authentication
+    ) {
+
+        return aiRoadmapManagerService
+                .generateAndSaveRoadmap(
+                        request.getGoal(),
+                        authentication.getName()
+                );
     }
 }

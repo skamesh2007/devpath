@@ -1,64 +1,85 @@
 package com.devpath.backend.service;
 
-import com.devpath.backend.dto.ProfileRequest;
-import com.google.genai.Client;
-import com.google.genai.types.GenerateContentResponse;
-import org.springframework.beans.factory.annotation.Value;
+import com.devpath.backend.dto.AIRoadmapResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AiRoadmapService {
 
-    private final Client client;
-    private final String model;
+    private final GeminiService geminiService;
+    private final ObjectMapper objectMapper;
 
     public AiRoadmapService(
-            @Value("${gemini.api-key}") String apiKey,
-            @Value("${gemini.model}") String model
+            GeminiService geminiService,
+            ObjectMapper objectMapper
     ) {
-        this.client = Client.builder()
-                .apiKey(apiKey)
-                .build();
-
-        this.model = model;
+        this.geminiService = geminiService;
+        this.objectMapper = objectMapper;
     }
 
-    public String generateRoadmap(ProfileRequest request) {
+    public AIRoadmapResponse generateRoadmap(String goal) {
 
         String prompt = """
-You are DevPath AI.
+                You are a software career roadmap generator.
 
-Student Profile:
-Year: %d
-Branch: %s
-Goal: %s
-Skills: %s
+                Generate a roadmap for:
 
-Generate recommendations.
+                Goal: %s
 
-Return ONLY valid JSON.
+                Return ONLY valid JSON.
 
-Example format:
+                Format:
 
-{
-  "skillsToLearn": ["Git", "SQL"],
-  "projectsToBuild": ["Student Management System"],
-  "placementPreparation": ["Solve 30 Array Problems"]
-}
+                {
+                  "roadmapTitle": "Java Backend Developer",
+                  "tasks": [
+                    "Java Fundamentals",
+                    "OOP",
+                    "Collections",
+                    "Exception Handling",
+                    "JDBC",
+                    "Spring Boot",
+                    "JPA",
+                    "Spring Security",
+                    "Microservices"
+                  ]
+                }
 
-Do not return empty arrays.
-Populate every field.
-"""
-                .formatted(
-                        request.getYear(),
-                        request.getBranch(),
-                        request.getGoal(),
-                        request.getSkills()
-                );
+                Rules:
+                - Return only JSON
+                - No markdown
+                - No explanations
+                - At least 8 tasks
+                - Tasks must be ordered from beginner to advanced
+                """
+                .formatted(goal);
 
-        GenerateContentResponse response =
-                client.models.generateContent(model, prompt, null);
+        String responseText =
+                geminiService.generate(prompt);
 
-        return response.text();
+        if (responseText == null || responseText.isBlank()) {
+            throw new RuntimeException("Gemini returned empty response");
+        }
+
+        try {
+
+            String json = responseText
+                    .replace("```json", "")
+                    .replace("```", "")
+                    .trim();
+
+            return objectMapper.readValue(
+                    json,
+                    AIRoadmapResponse.class
+            );
+
+        } catch (Exception e) {
+
+            throw new RuntimeException(
+                    "Failed to parse AI response: " + responseText,
+                    e
+            );
+        }
     }
 }

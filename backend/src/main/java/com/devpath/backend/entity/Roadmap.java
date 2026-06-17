@@ -26,6 +26,10 @@ public class Roadmap {
     @Column
     private String description;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean aiGenerated = false;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
