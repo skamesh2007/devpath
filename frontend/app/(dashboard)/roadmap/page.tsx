@@ -24,6 +24,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import EditRoadmapDialog from "@/components/EditRoadmapDialog"
 import EditTaskDialog from "@/components/EditTaskDialog"
 
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+
 export default function RoadmapPage() {
   const [roadmaps, setRoadmaps] = useState<Roadmap[]>([])
   const [selectedRoadmap, setSelectedRoadmap] = useState<Roadmap | null>(null)
@@ -152,7 +155,13 @@ export default function RoadmapPage() {
           <div className="flex items-center justify-between">
             <CardTitle>Roadmaps</CardTitle>
 
-            <CreateRoadmapDialog onCreated={loadRoadmaps} />
+            <div className="flex items-center gap-2">
+              <Button asChild variant="outline">
+                <Link href="/roadmap/generate">Generate with AI</Link>
+              </Button>
+
+              <CreateRoadmapDialog onCreated={loadRoadmaps} />
+            </div>
           </div>
         </CardHeader>
 

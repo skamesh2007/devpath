@@ -1,9 +1,12 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"
 
-import { useAuthStore } from "@/store/authStore";
-import { DashboardResponse, getDashboard } from "@/services/dashboardService";
+import { useAuthStore } from "@/store/authStore"
+import { DashboardResponse, getDashboard } from "@/services/dashboardService"
+
+import { getInsights } from "@/services/aiService"
+import { AIInsightsResponse } from "@/types/ai"
 
 import {
   Card,
@@ -11,48 +14,57 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/card"
 
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"
 
 import {
-  ArrowUpRight,
   BookOpen,
   CheckCircle2,
   Code2,
   Rocket,
   Sparkles,
   Target,
-} from "lucide-react";
+} from "lucide-react"
 
 export default function DashboardPage() {
-  const user = useAuthStore((state) => state.user);
+  const user = useAuthStore((state) => state.user)
 
-  const router = useRouter();
+  const router = useRouter()
 
-  const [dashboard, setDashboard] =
-    useState<DashboardResponse | null>(null);
+  const [dashboard, setDashboard] = useState<DashboardResponse | null>(null)
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true)
+  const [insights, setInsights] = useState<AIInsightsResponse | null>(null)
 
   useEffect(() => {
-    const loadDashboard = async () => {
+    const loadData = async () => {
       try {
-        const data = await getDashboard();
-        setDashboard(data);
-      } catch (error) {
-        console.error("Failed to load dashboard", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+        const [dashboardResult, insightsResult] = await Promise.allSettled([
+          getDashboard(),
+          getInsights(),
+        ])
 
-    loadDashboard();
-  }, []);
+        if (dashboardResult.status === "fulfilled") {
+          setDashboard(dashboardResult.value)
+        }
+
+        if (insightsResult.status === "fulfilled") {
+          setInsights(insightsResult.value)
+        }
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, [])
 
   const stats = dashboard
     ? [
@@ -78,8 +90,7 @@ export default function DashboardPage() {
           progress:
             dashboard.totalTasks === 0
               ? 0
-              : (dashboard.completedTasks * 100) /
-                dashboard.totalTasks,
+              : (dashboard.completedTasks * 100) / dashboard.totalTasks,
         },
         {
           title: "Active Projects",
@@ -89,16 +100,14 @@ export default function DashboardPage() {
           progress: 0,
         },
       ]
-    : [];
+    : []
 
   if (loading) {
     return (
       <div className="container mx-auto p-6">
-        <p className="text-muted-foreground">
-          Loading dashboard...
-        </p>
+        <p className="text-muted-foreground">Loading dashboard...</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -107,10 +116,7 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Badge
-              variant="secondary"
-              className="rounded-full px-3 py-1"
-            >
+            <Badge variant="secondary" className="rounded-full px-3 py-1">
               <Sparkles className="mr-1 h-3.5 w-3.5" />
               Dashboard
             </Badge>
@@ -131,9 +137,9 @@ export default function DashboardPage() {
             View Roadmap
           </Button>
 
-          <Button>
-            <ArrowUpRight className="mr-2 h-4 w-4" />
-            Continue Learning
+          <Button onClick={() => router.push("/roadmap/generate")}>
+            <Sparkles className="mr-2 h-4 w-4" />
+            Generate AI Roadmap
           </Button>
         </div>
       </div>
@@ -141,13 +147,10 @@ export default function DashboardPage() {
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => {
-          const Icon = stat.icon;
+          const Icon = stat.icon
 
           return (
-            <Card
-              key={stat.title}
-              className="rounded-2xl"
-            >
+            <Card key={stat.title} className="rounded-2xl">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
                   {stat.title}
@@ -157,110 +160,175 @@ export default function DashboardPage() {
               </CardHeader>
 
               <CardContent className="space-y-3">
-                <div className="text-2xl font-bold">
-                  {stat.value}
-                </div>
+                <div className="text-2xl font-bold">{stat.value}</div>
 
                 <p className="text-xs text-muted-foreground">
                   {stat.description}
                 </p>
 
-                <Progress
-                  value={stat.progress}
-                  className="h-2"
-                />
+                <Progress value={stat.progress} className="h-2" />
               </CardContent>
             </Card>
-          );
+          )
         })}
       </div>
 
-      {/* Overview + Actions */}
+      <Card className="rounded-2xl">
+        <CardHeader>
+          <CardTitle>Continue Learning</CardTitle>
+
+          <CardDescription>Pick up where you left off.</CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          <div className="rounded-xl border p-4">
+            <p className="font-medium">Your Current Roadmap</p>
+
+            <p className="text-sm text-muted-foreground">
+              {dashboard?.completedTasks ?? 0} of {dashboard?.totalTasks ?? 0}{" "}
+              tasks completed
+            </p>
+
+            <Progress
+              value={dashboard?.roadmapProgress ?? 0}
+              className="mt-3"
+            />
+          </div>
+
+          <Button className="w-full" onClick={() => router.push("/roadmap")}>
+            Continue Roadmap
+          </Button>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="rounded-2xl lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Career Progress Overview</CardTitle>
+        {/* AI Career Coach */}
+        <div className="lg:col-span-2">
+          <Card className="h-full rounded-2xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5" />
+                AI Career Coach
+              </CardTitle>
 
-            <CardDescription>
-              Live data from your roadmap and LeetCode activity.
-            </CardDescription>
-          </CardHeader>
+              <CardDescription>
+                Personalized guidance based on your progress.
+              </CardDescription>
+            </CardHeader>
 
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between rounded-xl border p-4">
-              <div>
+            <CardContent className="space-y-4">
+              {insights ? (
+                <>
+                  <div className="rounded-xl border p-4">
+                    <p className="font-medium">Recommended Next Step</p>
+
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {insights.nextActions?.[0] ??
+                        "No recommendations available yet."}
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border p-4">
+                    <p className="font-medium">Improvement Area</p>
+
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {insights.weaknesses?.[0] ??
+                        "No weaknesses identified yet."}
+                    </p>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => router.push("/insights")}
+                  >
+                    View Full Analysis
+                  </Button>
+                </>
+              ) : (
                 <p className="text-sm text-muted-foreground">
-                  Roadmap Completion
+                  No insights available yet.
                 </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
-                <p className="text-2xl font-bold">
-                  {dashboard?.roadmapProgress ?? 0}%
-                </p>
-              </div>
+        {/* AI Features */}
+        <div>
+          <Card className="h-full rounded-2xl">
+            <CardHeader>
+              <CardTitle>AI Features</CardTitle>
+            </CardHeader>
 
-              <Target className="h-8 w-8 text-muted-foreground" />
-            </div>
+            <CardContent className="space-y-3">
+              <Button
+                className="w-full"
+                onClick={() => router.push("/roadmap/generate")}
+              >
+                Generate AI Roadmap
+              </Button>
 
-            <div className="flex items-center justify-between rounded-xl border p-4">
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  Tasks Completed
-                </p>
-
-                <p className="text-2xl font-bold">
-                  {dashboard?.completedTasks ?? 0}
-                </p>
-              </div>
-
-              <CheckCircle2 className="h-8 w-8 text-muted-foreground" />
-            </div>
-
-            <div className="flex items-center justify-between rounded-xl border p-4">
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  LeetCode Solved
-                </p>
-
-                <p className="text-2xl font-bold">
-                  {dashboard?.leetcodeSolved ?? 0}
-                </p>
-              </div>
-
-              <Code2 className="h-8 w-8 text-muted-foreground" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-
-            <CardDescription>
-              Continue building your profile.
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="space-y-3">
-            <Button className="w-full">
-              Create Roadmap
-            </Button>
-
-            <Button
-              variant="outline"
-              className="w-full"
-            >
-              Add Task
-            </Button>
-
-            <Button
-              variant="outline"
-              className="w-full"
-            >
-              Open AI Mentor
-            </Button>
-          </CardContent>
-        </Card>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => router.push("/insights")}
+              >
+                View AI Insights
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
+
+      {/* Career Progress */}
+      <Card className="rounded-2xl">
+        <CardHeader>
+          <CardTitle>Career Progress</CardTitle>
+
+          <CardDescription>Track your learning journey.</CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between rounded-xl border p-4">
+            <div>
+              <p className="text-sm text-muted-foreground">
+                Roadmap Completion
+              </p>
+
+              <p className="text-2xl font-bold">
+                {dashboard?.roadmapProgress ?? 0}%
+              </p>
+            </div>
+
+            <Target className="h-8 w-8 text-muted-foreground" />
+          </div>
+
+          <div className="flex items-center justify-between rounded-xl border p-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Tasks Completed</p>
+
+              <p className="text-2xl font-bold">
+                {dashboard?.completedTasks ?? 0}
+              </p>
+            </div>
+
+            <CheckCircle2 className="h-8 w-8 text-muted-foreground" />
+          </div>
+
+          <div className="flex items-center justify-between rounded-xl border p-4">
+            <div>
+              <p className="text-sm text-muted-foreground">LeetCode Solved</p>
+
+              <p className="text-2xl font-bold">
+                {dashboard?.leetcodeSolved ?? 0}
+              </p>
+            </div>
+
+            <Code2 className="h-8 w-8 text-muted-foreground" />
+          </div>
+        </CardContent>
+      </Card>
     </div>
-  );
+  )
 }
