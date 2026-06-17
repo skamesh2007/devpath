@@ -5,6 +5,7 @@ import type { AuthResponse } from "@/types/auth";
 export interface UpdateProfileRequest {
   username: string;
   name: string;
+  bio: string;
 }
 
 /**
@@ -24,6 +25,7 @@ export const updateProfile = async (
     username: updated.username,
     email: updated.email,
     name: updated.name,
+    bio: updated.bio,
     role: updated.role,
   });
 

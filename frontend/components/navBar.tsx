@@ -4,7 +4,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
-import { CIcon } from "@coreui/icons-react"
 import { SiLeetcode } from "react-icons/si"
 import { User } from "lucide-react"
 
@@ -30,48 +29,6 @@ const HomeIcon = ({ filled }: { filled: boolean }) => (
   </svg>
 )
 
-const ReportIcon = ({ filled }: { filled: boolean }) => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-[22px] w-[22px]">
-    <path
-      d="M9 3 7.17 5H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-3.17L15 3H9Z"
-      fill={filled ? "currentColor" : "none"}
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-    />
-    <circle
-      cx="12"
-      cy="12"
-      r="3.5"
-      fill={filled ? "white" : "none"}
-      stroke={filled ? "none" : "currentColor"}
-      strokeWidth="1.5"
-    />
-  </svg>
-)
-
-const StoreIcon = ({ filled }: { filled: boolean }) => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-[22px] w-[22px]">
-    <path
-      d="M6 2 3 6v14a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V6L18 2H6Z"
-      fill={filled ? "currentColor" : "none"}
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M3 6h18"
-      stroke={filled ? "rgba(255,255,255,0.35)" : "currentColor"}
-      strokeWidth="1.5"
-    />
-    <path
-      d="M16 10a4 4 0 0 1-8 0"
-      stroke={filled ? "white" : "currentColor"}
-      strokeWidth="1.8"
-      strokeLinecap="round"
-    />
-  </svg>
-)
 
 const ProfileIcon = ({ filled }: { filled: boolean }) => (
   <User

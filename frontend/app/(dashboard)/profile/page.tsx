@@ -1,18 +1,12 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Settings, LogOut, User } from "lucide-react"
-import { logout } from "@/services/authService"
+import { Settings, User } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
 
 export default function ProfilePage() {
   const router = useRouter()
   const user = useAuthStore((state) => state.user)
-
-  const handleLogout = () => {
-    logout()
-    router.replace("/auth/login")
-  }
 
   return (
     <div className="mx-auto max-w-4xl p-6">

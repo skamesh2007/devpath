@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .cors(cors -> {})
                 .authorizeHttpRequests(auth -> auth
                         // Public: login + register only
-                        .requestMatchers("/auth/login", "/auth/register").permitAll()
+                        .requestMatchers("/auth/login", "/auth/register","/auth/health").permitAll()
                         // /auth/me requires a valid JWT — it's protected
                         .anyRequest().authenticated()
                 )

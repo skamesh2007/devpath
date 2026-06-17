@@ -1,6 +1,6 @@
 import api from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
-import type { LoginRequest, RegisterRequest, AuthResponse, User } from "@/types/auth";
+import type { AuthResponse, LoginRequest, RegisterRequest } from "@/types/auth";
 
 export const login = async (data: LoginRequest): Promise<AuthResponse> => {
   const response = await api.post<AuthResponse>("/auth/login", data);
