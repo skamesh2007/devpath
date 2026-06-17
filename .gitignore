@@ -1,17 +1,47 @@
-# Frontend
+# =========================
+# Frontend (Next.js)
+# =========================
 frontend/node_modules/
 frontend/.next/
+frontend/out/
+
 frontend/.env
 frontend/.env.local
+frontend/.env.development.local
+frontend/.env.production.local
+frontend/.env.test.local
 
-# Backend
+# Logs
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# =========================
+# Backend (Spring Boot)
+# =========================
 backend/target/
-backend/.idea/
+backend/.mvn/wrapper/maven-wrapper.jar
 
-# IDE
+# Environment files
+backend/.env
+backend/application-local.properties
+backend/application-local.yml
+
+# =========================
+# IDEs
+# =========================
 .vscode/
 .idea/
+*.iml
 
-# OS
+# =========================
+# OS Files
+# =========================
 .DS_Store
 Thumbs.db
+
+# =========================
+# Misc
+# =========================
+*.log
