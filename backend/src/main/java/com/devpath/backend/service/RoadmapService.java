@@ -1,19 +1,27 @@
 package com.devpath.backend.service;
 
 import com.devpath.backend.dto.ProfileRequest;
-import org.springframework.ai.chat.client.ChatClient;
+import com.google.genai.Client;
+import com.google.genai.types.GenerateContentResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RoadmapService {
 
-    private final ChatClient chatClient;
+    private final Client client;
+    private final String model;
 
-    public RoadmapService(ChatClient chatClient){
-        this.chatClient = chatClient;
+    public RoadmapService(@Value("${gemini.api-key}") String apiKey,
+                          @Value("${gemini.model}") String model) {
+        this.client = Client.builder()
+                .apiKey(apiKey)
+                .build();
+        this.model = model;
     }
 
-    public String generateRoadmap(ProfileRequest request){
+    public String generateRoadmap(ProfileRequest request) {
+
         String prompt = """
 You are DevPath AI.
 
@@ -44,9 +52,10 @@ Populate every field.
                         request.getGoal(),
                         request.getSkills()
                 );
-        return chatClient.prompt()
-                .user(prompt)
-                .call()
-                .content();
+
+        GenerateContentResponse response =
+                client.models.generateContent(model, prompt, null);
+
+        return response.text();
     }
 }

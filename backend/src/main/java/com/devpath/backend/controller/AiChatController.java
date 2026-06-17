@@ -5,19 +5,17 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/ai")
-@CrossOrigin()
+@CrossOrigin
 public class AiChatController {
 
     private final AiChatService aiChatService;
 
-    public AiChatController(AiChatService aiChatService){
+    public AiChatController(AiChatService aiChatService) {
         this.aiChatService = aiChatService;
     }
 
-
     @GetMapping("/ask")
-    public String ask(@RequestParam String question){
+    public String ask(@RequestParam String question) {
         return aiChatService.ask(question);
     }
-
 }

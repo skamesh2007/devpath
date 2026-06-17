@@ -1,14 +1,8 @@
+gemini:
+  api-key: ${GEMINI_API_KEY}
+  model: gemini-2.5-flash
+
 spring:
-  ai:
-    openai:
-      base-url: http://192.168.0.100:1234/v1
-      api-key: dummy
-      chat:
-        options:
-          model: qwen2.5-7b-instruct
-          max-completion-tokens: 150
-
-
   datasource:
     url: ${JDBC_DATABASE_URL}
     username: ${JDBC_DATABASE_USERNAME}
@@ -28,5 +22,4 @@ jwt:
   expiration: 86400000
 
 server:
-  address: 0.0.0.0
   port: ${PORT:8080}
