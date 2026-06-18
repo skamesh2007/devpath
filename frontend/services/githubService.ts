@@ -1,0 +1,39 @@
+import api from "@/lib/api";
+
+import {
+  GitHubStatsResponse,
+  GitHubUsernameResponse,
+} from "@/types/github";
+
+export interface GitHubUsernameRequest {
+  githubUsername: string;
+}
+
+export const getGitHubUsername =
+  async (): Promise<GitHubUsernameResponse> => {
+    const response = await api.get(
+      "/github/username"
+    );
+
+    return response.data;
+  };
+
+export const saveGitHubUsername = async (
+  data: GitHubUsernameRequest
+): Promise<GitHubUsernameResponse> => {
+  const response = await api.post(
+    "/github/username",
+    data
+  );
+
+  return response.data;
+};
+
+export const getGitHubStats =
+  async (): Promise<GitHubStatsResponse> => {
+    const response = await api.get(
+      "/github/stats"
+    );
+
+    return response.data;
+  };

@@ -12,7 +12,6 @@ import { getTasks, updateTask } from "@/services/taskService"
 import { Roadmap, RoadmapTask, RoadmapAnalyticsResponse } from "@/types/roadmap"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-
 import { Progress } from "@/components/ui/progress"
 
 import CreateRoadmapDialog from "@/components/roadmap/CreateRoadmapDialog"
@@ -31,41 +30,16 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 import RoadmapAnalyticsCard from "@/components/roadmap/RoadmapAnalyticsCard"
-
 import RoadmapLoading from "@/components/loading/RoadmapLoading"
 
 export default function RoadmapPage() {
   const [roadmaps, setRoadmaps] = useState<Roadmap[]>([])
   const [selectedRoadmap, setSelectedRoadmap] = useState<Roadmap | null>(null)
-
   const [tasks, setTasks] = useState<RoadmapTask[]>([])
   const [analytics, setAnalytics] = useState<RoadmapAnalyticsResponse | null>(
     null
   )
-
   const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    loadRoadmaps()
-  }, [])
-
-  const loadRoadmaps = async () => {
-    try {
-      const data = await getRoadmaps()
-
-      setRoadmaps(data)
-
-      if (data.length > 0) {
-        setSelectedRoadmap(data[0])
-
-        await Promise.all([loadTasks(data[0].id), loadAnalytics(data[0].id)])
-      }
-    } catch (error) {
-      console.error("Failed to load roadmaps", error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const loadTasks = async (roadmapId: number) => {
     try {
@@ -84,6 +58,37 @@ export default function RoadmapPage() {
       console.error("Failed to load analytics", error)
     }
   }
+
+  const loadRoadmaps = async () => {
+    try {
+      setLoading(true)
+
+      const data = await getRoadmaps()
+      setRoadmaps(data)
+
+      if (data.length > 0) {
+        const firstRoadmap = data[0]
+        setSelectedRoadmap(firstRoadmap)
+
+        await Promise.all([
+          loadTasks(firstRoadmap.id),
+          loadAnalytics(firstRoadmap.id),
+        ])
+      }
+    } catch (error) {
+      console.error("Failed to load roadmaps:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void loadRoadmaps()
+    }, 0)
+
+    return () => window.clearTimeout(timer)
+  }, [loadRoadmaps])
 
   const selectRoadmap = async (roadmap: Roadmap) => {
     setSelectedRoadmap(roadmap)
@@ -167,8 +172,8 @@ export default function RoadmapPage() {
   }
 
   if (loading) {
-  return <RoadmapLoading />
-}
+    return <RoadmapLoading />
+  }
 
   return (
     <div className="grid h-full gap-6 p-6 lg:grid-cols-3">

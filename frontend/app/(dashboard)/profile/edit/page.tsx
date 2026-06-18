@@ -20,6 +20,9 @@ import {
   getLeetCodeUsername,
   saveLeetCodeUsername,
 } from "@/services/leetcodeService"
+import { getGitHubUsername, saveGitHubUsername } from "@/services/githubService"
+
+import EditProfileLoading from "@/components/loading/EditProfileLoading"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -28,12 +31,14 @@ interface FormState {
   name: string
   bio: string
   leetcodeUsername: string
+  githubUsername: string
 }
 
 interface FieldErrors {
   username?: string
   name?: string
   leetcodeUsername?: string
+  githubUsername?: string
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -48,6 +53,7 @@ export default function EditProfilePage() {
     name: "",
     bio: "",
     leetcodeUsername: "",
+    githubUsername: "",
   })
 
   const [original, setOriginal] = useState<FormState>({
@@ -55,6 +61,7 @@ export default function EditProfilePage() {
     name: "",
     bio: "",
     leetcodeUsername: "",
+    githubUsername: "",
   })
 
   const [loading, setLoading] = useState(true)
@@ -67,32 +74,30 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     const load = async () => {
-      try {
-        setLoading(true)
+      setLoading(true)
 
-        const leetcodeRes = await getLeetCodeUsername()
-        const initial: FormState = {
-          username: user?.username ?? "",
-          name: user?.name ?? "",
-          bio: user?.bio ?? "",
-          leetcodeUsername: leetcodeRes.username ?? "",
-        }
+      const [leetcodeRes, githubRes] = await Promise.allSettled([
+        getLeetCodeUsername(),
+        getGitHubUsername(),
+      ])
 
-        setForm(initial)
-        setOriginal(initial)
-      } catch {
-        // If leetcode fetch fails, still populate from store
-        const initial: FormState = {
-          username: user?.username ?? "",
-          name: user?.name ?? "",
-          bio: user?.bio ?? "",
-          leetcodeUsername: "",
-        }
-        setForm(initial)
-        setOriginal(initial)
-      } finally {
-        setLoading(false)
+      const initial: FormState = {
+        username: user?.username ?? "",
+        name: user?.name ?? "",
+        bio: user?.bio ?? "",
+        leetcodeUsername:
+          leetcodeRes.status === "fulfilled"
+            ? (leetcodeRes.value.username ?? "")
+            : "",
+        githubUsername:
+          githubRes.status === "fulfilled"
+            ? (githubRes.value.githubUsername ?? "")
+            : "",
       }
+
+      setForm(initial)
+      setOriginal(initial)
+      setLoading(false)
     }
 
     load()
@@ -104,7 +109,8 @@ export default function EditProfilePage() {
     form.username !== original.username ||
     form.name !== original.name ||
     form.bio !== original.bio ||
-    form.leetcodeUsername !== original.leetcodeUsername
+    form.leetcodeUsername !== original.leetcodeUsername ||
+    form.githubUsername !== original.githubUsername
 
   const setField =
     (field: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -134,7 +140,9 @@ export default function EditProfilePage() {
       const leetcodeChanged =
         form.leetcodeUsername !== original.leetcodeUsername
 
-      // Run both requests in parallel when both changed
+      const githubChanged = form.githubUsername !== original.githubUsername
+
+      // Run requests in parallel when multiple things changed
       const tasks: Promise<unknown>[] = []
 
       if (profileChanged) {
@@ -151,6 +159,14 @@ export default function EditProfilePage() {
         tasks.push(
           saveLeetCodeUsername({
             leetcodeUsername: form.leetcodeUsername.trim(),
+          })
+        )
+      }
+
+      if (githubChanged) {
+        tasks.push(
+          saveGitHubUsername({
+            githubUsername: form.githubUsername.trim(),
           })
         )
       }
@@ -180,6 +196,7 @@ export default function EditProfilePage() {
         name: form.name.trim(),
         bio: form.bio.trim(),
         leetcodeUsername: form.leetcodeUsername.trim(),
+        githubUsername: form.githubUsername.trim(),
       }
       setForm(newOriginal)
       setOriginal(newOriginal)
@@ -210,11 +227,7 @@ export default function EditProfilePage() {
   // ── Render ───────────────────────────────────────────────────────────────
 
   if (loading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
-      </div>
-    )
+    return <EditProfileLoading />
   }
 
   return (
@@ -322,51 +335,79 @@ export default function EditProfilePage() {
                 Integrations
               </p>
 
-              <Field>
-                <FieldLabel htmlFor="leetcode">LeetCode Username</FieldLabel>
-                <Input
-                  id="leetcode"
-                  type="text"
-                  value={form.leetcodeUsername}
-                  onChange={setField("leetcodeUsername")}
-                  placeholder="e.g. neal_wu"
-                  aria-invalid={!!fieldErrors.leetcodeUsername}
-                  className="h-11 text-base"
-                />
-                {fieldErrors.leetcodeUsername ? (
-                  <p className="mt-1 text-xs text-red-500">
-                    {fieldErrors.leetcodeUsername}
-                  </p>
-                ) : (
+              <div className="space-y-4">
+                <Field>
+                  <FieldLabel htmlFor="leetcode">LeetCode Username</FieldLabel>
+                  <Input
+                    id="leetcode"
+                    type="text"
+                    value={form.leetcodeUsername}
+                    onChange={setField("leetcodeUsername")}
+                    placeholder="e.g. neal_wu"
+                    aria-invalid={!!fieldErrors.leetcodeUsername}
+                    className="h-11 text-base"
+                  />
+                  {fieldErrors.leetcodeUsername ? (
+                    <p className="mt-1 text-xs text-red-500">
+                      {fieldErrors.leetcodeUsername}
+                    </p>
+                  ) : (
+                    <FieldDescription>
+                      Links your LeetCode stats to your DevPath profile.
+                      {form.leetcodeUsername && original.leetcodeUsername && (
+                        <> Clear and save to disconnect.</>
+                      )}
+                    </FieldDescription>
+                  )}
+                </Field>
+
+                <Field>
+                  <FieldLabel htmlFor="github">GitHub Username</FieldLabel>
+                  <Input
+                    id="github"
+                    type="text"
+                    value={form.githubUsername}
+                    onChange={setField("githubUsername")}
+                    placeholder="e.g. octocat"
+                    aria-invalid={!!fieldErrors.githubUsername}
+                    className="h-11 text-base"
+                  />
+                  {fieldErrors.githubUsername ? (
+                    <p className="mt-1 text-xs text-red-500">
+                      {fieldErrors.githubUsername}
+                    </p>
+                  ) : (
+                    <FieldDescription>
+                      Links your GitHub stats to your DevPath profile.
+                      {form.githubUsername && original.githubUsername && (
+                        <> Clear and save to disconnect.</>
+                      )}
+                    </FieldDescription>
+                  )}
+                </Field>
+
+                <Field>
+                  <FieldLabel htmlFor="bio">Bio</FieldLabel>
+
+                  <textarea
+                    id="bio"
+                    value={form.bio}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        bio: e.target.value,
+                      }))
+                    }
+                    maxLength={120}
+                    placeholder="Tell others about yourself..."
+                    className="min-h-[110px] w-full rounded-xl border bg-background px-3 py-3 text-sm outline-none"
+                  />
+
                   <FieldDescription>
-                    Links your LeetCode stats to your DevPath profile.
-                    {form.leetcodeUsername && original.leetcodeUsername && (
-                      <> Clear and save to disconnect.</>
-                    )}
+                    {form.bio.length}/120 characters
                   </FieldDescription>
-                )}
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="bio">Bio</FieldLabel>
-
-                <textarea
-                  id="bio"
-                  value={form.bio}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      bio: e.target.value,
-                    }))
-                  }
-                  maxLength={120}
-                  placeholder="Tell others about yourself..."
-                  className="min-h-[110px] w-full rounded-xl border bg-background px-3 py-3 text-sm outline-none"
-                />
-
-                <FieldDescription>
-                  {form.bio.length}/120 characters
-                </FieldDescription>
-              </Field>
+                </Field>
+              </div>
             </div>
 
             {/* Save button */}

@@ -123,10 +123,10 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="container mx-auto space-y-8 p-6">
+    <div className="container mx-auto space-y-6 p-4 sm:space-y-8 sm:p-6">
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-2">
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="rounded-full px-3 py-1">
               <Sparkles className="mr-1 h-3.5 w-3.5" />
@@ -134,22 +134,29 @@ export default function DashboardPage() {
             </Badge>
           </div>
 
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="truncate text-2xl font-bold tracking-tight sm:text-3xl">
             Welcome, {user?.username ?? "User"}!
           </h1>
 
-          <p className="text-sm text-muted-foreground">
+          <p className="truncate text-sm text-muted-foreground">
             {user?.email ?? "your email"} • Your career progress at a glance
           </p>
         </div>
 
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => router.push("/roadmap")}>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button
+            variant="outline"
+            className="w-full sm:w-auto"
+            onClick={() => router.push("/roadmap")}
+          >
             <BookOpen className="mr-2 h-4 w-4" />
             View Roadmap
           </Button>
 
-          <Button onClick={() => router.push("/roadmap/generate")}>
+          <Button
+            className="w-full sm:w-auto"
+            onClick={() => router.push("/roadmap/generate")}
+          >
             <Sparkles className="mr-2 h-4 w-4" />
             Generate AI Roadmap
           </Button>
@@ -157,7 +164,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => {
           const Icon = stat.icon
 
@@ -168,7 +175,7 @@ export default function DashboardPage() {
                   {stat.title}
                 </CardTitle>
 
-                <Icon className="h-4 w-4 text-muted-foreground" />
+                <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
               </CardHeader>
 
               <CardContent className="space-y-3">

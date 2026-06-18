@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 import { SiLeetcode } from "react-icons/si"
 import { User } from "lucide-react"
+import { FaGithub } from "react-icons/fa";
+
 
 // Filled + outline icon pairs
 const HomeIcon = ({ filled }: { filled: boolean }) => (
@@ -48,6 +50,15 @@ const LeetCodeIcon = ({ filled }: { filled: boolean }) => (
   />
 )
 
+const GitHubIcon = ({ filled }: { filled: boolean }) => (
+  <FaGithub
+    className={cn(
+      "h-[22px] w-[22px]",
+      filled ? "text-emerald-500" : "text-current"
+    )}
+  />
+)
+
 const tabs = [
   {
     href: "/dashboard",
@@ -58,6 +69,11 @@ const tabs = [
     href: "/leetcode",
     label: "LeetCode",
     Icon: LeetCodeIcon,
+  },
+  {
+    href: "/github",
+    label: "GitHub",
+    Icon: GitHubIcon,
   },
   {
     href: "/profile",
