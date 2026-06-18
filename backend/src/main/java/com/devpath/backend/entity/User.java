@@ -43,6 +43,9 @@ public class User implements UserDetails {
     @Column(name = "leet_code_username")  // explicit to avoid Hibernate naming surprises
     private String leetCodeUsername;
 
+    @Column(name = "github_username")
+    private String githubUsername;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
