@@ -5,20 +5,40 @@ import { useEffect, useState } from "react"
 import { getInsights } from "@/services/aiService"
 import { AIInsightsResponse } from "@/types/ai"
 
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  Sparkles,
+} from "lucide-react"
+
+import InsightsLoading from "@/components/loading/InsightsLoading"
+
+type Section = {
+  title: string
+  description: string
+  items: string[] | undefined
+  icon: typeof CheckCircle2
+  color: "emerald" | "amber" | "blue"
+  emptyText: string
+}
+
+const colorClasses = {
+  emerald: { bg: "bg-emerald-500/10", text: "text-emerald-500" },
+  amber: { bg: "bg-amber-500/10", text: "text-amber-500" },
+  blue: { bg: "bg-blue-500/10", text: "text-blue-500" },
+} as const
 
 export default function InsightsPage() {
   const [insights, setInsights] = useState<AIInsightsResponse | null>(null)
-
   const [loading, setLoading] = useState(true)
-
   const [error, setError] = useState("")
 
   useEffect(() => {
     void (async () => {
       try {
         const data = await getInsights()
-
         setInsights(data)
       } catch {
         setError("Failed to load AI insights")
@@ -29,60 +49,127 @@ export default function InsightsPage() {
   }, [])
 
   if (loading) {
-    return (
-      <div className="container mx-auto p-6">
-        <p>Loading AI insights...</p>
-      </div>
-    )
+    return <InsightsLoading />
   }
 
   if (error) {
     return (
-      <div className="container mx-auto p-6">
-        <p className="text-red-500">{error}</p>
+      <div className="mx-auto max-w-3xl p-4 sm:p-6">
+        <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
+          <div>
+            <p className="font-medium text-red-700 dark:text-red-400">
+              Couldn&apos;t load insights
+            </p>
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400/80">
+              {error}. Please try again later.
+            </p>
+          </div>
+        </div>
       </div>
     )
   }
 
+  if (!insights) {
+    return (
+      <div className="mx-auto flex max-w-3xl flex-col items-center justify-center gap-3 p-4 py-16 text-center sm:p-6">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+          <Sparkles className="h-8 w-8 text-muted-foreground" />
+        </div>
+        <h1 className="text-xl font-bold">No insights yet</h1>
+        <p className="max-w-sm text-sm text-muted-foreground">
+          Generate an analysis from your dashboard to see your strengths,
+          weaknesses, and recommended next steps here.
+        </p>
+      </div>
+    )
+  }
+
+  const sections: Section[] = [
+    {
+      title: "Strengths",
+      description: "What you're doing well.",
+      items: insights.strengths,
+      icon: CheckCircle2,
+      color: "emerald",
+      emptyText: "No strengths identified yet.",
+    },
+    {
+      title: "Weaknesses",
+      description: "Areas that need attention.",
+      items: insights.weaknesses,
+      icon: AlertTriangle,
+      color: "amber",
+      emptyText: "No weaknesses identified yet.",
+    },
+    {
+      title: "Next Actions",
+      description: "Recommended steps to keep moving forward.",
+      items: insights.nextActions,
+      icon: ArrowRight,
+      color: "blue",
+      emptyText: "No recommendations available yet.",
+    },
+  ]
+
   return (
-    <div className="container mx-auto space-y-6 p-6">
-      <h1 className="text-3xl font-bold">AI Insights</h1>
+    <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/10">
+          <Sparkles className="h-5 w-5 text-violet-500" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            AI Insights
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            A breakdown of your progress, generated from your activity.
+          </p>
+        </div>
+      </div>
 
-      <Card>
-        <CardContent className="pt-6">
-          <h2 className="mb-4 text-xl font-semibold">Strengths</h2>
+      {sections.map((section) => {
+        const Icon = section.icon
+        const colors = colorClasses[section.color]
 
-          <ul className="space-y-2">
-            {insights?.strengths.map((item, index) => (
-              <li key={index}>✅ {item}</li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+        return (
+          <Card key={section.title} className="rounded-2xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-base">
+                <div
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${colors.bg}`}
+                >
+                  <Icon className={`h-4 w-4 ${colors.text}`} />
+                </div>
+                {section.title}
+              </CardTitle>
+            </CardHeader>
 
-      <Card>
-        <CardContent className="pt-6">
-          <h2 className="mb-4 text-xl font-semibold">Weaknesses</h2>
-
-          <ul className="space-y-2">
-            {insights?.weaknesses.map((item, index) => (
-              <li key={index}>⚠️ {item}</li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="pt-6">
-          <h2 className="mb-4 text-xl font-semibold">Next Actions</h2>
-
-          <ul className="space-y-2">
-            {insights?.nextActions.map((item, index) => (
-              <li key={index}>🚀 {item}</li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+            <CardContent>
+              {section.items && section.items.length > 0 ? (
+                <ul className="space-y-2">
+                  {section.items.map((item, index) => (
+                    <li
+                      key={index}
+                      className="flex items-start gap-2 text-sm"
+                    >
+                      <span
+                        className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${colors.bg.replace("/10", "")}`}
+                      />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  {section.emptyText}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )
+      })}
     </div>
   )
 }
