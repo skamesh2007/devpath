@@ -1,18 +1,17 @@
 package com.devpath.backend.dto;
 
+
 import com.devpath.backend.entity.TaskPriority;
-import lombok.Data;
 
 import java.time.LocalDate;
+import lombok.Data;
 
 @Data
-public class UpdateTaskRequest {
+public class RecommendedTaskResponse {
 
+    private Long taskId;
     private String title;
-    private String description;
-    private Boolean completed;
-
-    private LocalDate dueDate;
     private TaskPriority priority;
+    private LocalDate dueDate;
     private Integer estimatedHours;
 }

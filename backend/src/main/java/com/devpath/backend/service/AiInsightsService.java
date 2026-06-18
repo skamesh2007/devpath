@@ -64,6 +64,21 @@ public class AiInsightsService {
             );
         }
 
+        if (!responseText.trim().startsWith("{")) {
+
+            return AIInsightsResponse.builder()
+                    .strengths(java.util.List.of(
+                            "AI insights currently unavailable"
+                    ))
+                    .weaknesses(java.util.List.of(
+                            "Gemini quota exceeded or service unavailable"
+                    ))
+                    .nextActions(java.util.List.of(
+                            "Try generating insights again later"
+                    ))
+                    .build();
+        }
+
         try {
 
             String json = responseText

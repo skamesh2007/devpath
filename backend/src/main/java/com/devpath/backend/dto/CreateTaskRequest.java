@@ -2,6 +2,8 @@ package com.devpath.backend.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import java.time.LocalDate;
+import com.devpath.backend.entity.TaskPriority;
 
 @Data
 public class CreateTaskRequest {
@@ -10,4 +12,8 @@ public class CreateTaskRequest {
     private String title;
 
     private String description;
+
+    private LocalDate dueDate;
+    private TaskPriority priority;
+    private Integer estimatedHours;
 }

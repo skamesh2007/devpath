@@ -1,9 +1,17 @@
 package com.devpath.backend.controller;
 
-import com.devpath.backend.dto.*;
+import com.devpath.backend.dto.CreateRoadmapRequest;
+import com.devpath.backend.dto.CreateTaskRequest;
+import com.devpath.backend.dto.RoadmapAnalyticsResponse;
+import com.devpath.backend.dto.RoadmapResponse;
+import com.devpath.backend.dto.RoadmapTaskResponse;
+import com.devpath.backend.dto.UpdateRoadmapRequest;
+import com.devpath.backend.dto.UpdateTaskRequest;
+import com.devpath.backend.service.RoadmapAnalyticsService;
 import com.devpath.backend.service.RoadmapService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +22,7 @@ import java.util.List;
 public class RoadmapController {
 
     private final RoadmapService roadmapService;
+    private final RoadmapAnalyticsService roadmapAnalyticsService;
 
     @PostMapping
     public RoadmapResponse createRoadmap(
@@ -77,5 +86,14 @@ public class RoadmapController {
             @PathVariable Long taskId
     ) {
         roadmapService.deleteTask(taskId);
+    }
+
+    @GetMapping("/{roadmapId}/analytics")
+    public ResponseEntity<RoadmapAnalyticsResponse> getRoadmapAnalytics(
+            @PathVariable Long roadmapId
+    ) {
+        return ResponseEntity.ok(
+                roadmapAnalyticsService.getRoadmapAnalytics(roadmapId)
+        );
     }
 }

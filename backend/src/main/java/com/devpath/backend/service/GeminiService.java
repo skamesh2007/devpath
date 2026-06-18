@@ -46,14 +46,45 @@ public class GeminiService {
                 log.warn(
                         "Gemini failed attempt {}/{}",
                         attempt,
-                        maxAttempts
+                        maxAttempts,
+                        ex
                 );
 
                 if (attempt == maxAttempts) {
-                    throw new RuntimeException(
-                            "Gemini unavailable",
-                            ex
-                    );
+
+                    String message = ex.getMessage();
+
+                    if (message != null &&
+                            message.contains("429")) {
+
+                        return """
+                                {
+                                  "strengths": [
+                                    "AI insights temporarily unavailable"
+                                  ],
+                                  "weaknesses": [
+                                    "Gemini API quota exceeded"
+                                  ],
+                                  "nextActions": [
+                                    "Try again later"
+                                  ]
+                                }
+                                """;
+                    }
+
+                    return """
+                            {
+                              "strengths": [
+                                "AI insights temporarily unavailable"
+                              ],
+                              "weaknesses": [
+                                "AI service unavailable"
+                              ],
+                              "nextActions": [
+                                "Try again later"
+                              ]
+                            }
+                            """;
                 }
 
                 try {
@@ -64,6 +95,18 @@ public class GeminiService {
             }
         }
 
-        throw new IllegalStateException();
+        return """
+                {
+                  "strengths": [
+                    "AI insights temporarily unavailable"
+                  ],
+                  "weaknesses": [
+                    "Unexpected AI service error"
+                  ],
+                  "nextActions": [
+                    "Try again later"
+                  ]
+                }
+                """;
     }
 }
