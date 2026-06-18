@@ -11,18 +11,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 import { Progress } from "@/components/ui/progress"
 
-import CreateRoadmapDialog from "@/components/CreateRoadmapDialog"
-import CreateTaskDialog from "@/components/CreateTaskDialog"
+import CreateRoadmapDialog from "@/components/roadmap/CreateRoadmapDialog"
+import CreateTaskDialog from "@/components/roadmap/CreateTaskDialog"
 
 import { Trash2 } from "lucide-react"
 import { deleteRoadmap } from "@/services/roadmapService"
 import { deleteTask } from "@/services/taskService"
-import DeleteConfirmDialog from "@/components/DeleteConfirmDialog"
+import DeleteConfirmDialog from "@/components/roadmap/DeleteConfirmDialog"
 
 import { Checkbox } from "@/components/ui/checkbox"
 
-import EditRoadmapDialog from "@/components/EditRoadmapDialog"
-import EditTaskDialog from "@/components/EditTaskDialog"
+import EditRoadmapDialog from "@/components/roadmap/EditRoadmapDialog"
+import EditTaskDialog from "@/components/roadmap/EditTaskDialog"
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"

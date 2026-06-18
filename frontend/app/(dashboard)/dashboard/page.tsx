@@ -5,6 +5,9 @@ import { useEffect, useState } from "react"
 import { useAuthStore } from "@/store/authStore"
 import { DashboardResponse, getDashboard } from "@/services/dashboardService"
 
+import CareerProgressCard from "@/components/dashboard/CareerProgressCard"
+import AICoachCard from "@/components/dashboard/AICoachCard"
+
 import { getInsights } from "@/services/aiService"
 import { AIInsightsResponse } from "@/types/ai"
 
@@ -190,139 +193,9 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* AI Career Coach */}
-        <div className="lg:col-span-2">
-          <Card className="h-full rounded-2xl">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5" />
-                AI Career Coach
-              </CardTitle>
+      <AICoachCard insightsLoading={insightsLoading} insights={insights} router={router} />
 
-              <CardDescription>
-                Personalized guidance based on your progress.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent className="space-y-4">
-              {insightsLoading ? (
-                <>
-                  <div className="h-20 animate-pulse rounded-xl border bg-muted" />
-                  <div className="h-20 animate-pulse rounded-xl border bg-muted" />
-                </>
-              ) : insights ? (
-                <>
-                  <div className="rounded-xl border p-4">
-                    <p className="font-medium">Recommended Next Step</p>
-
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {insights.nextActions?.[0] ??
-                        "No recommendations available yet."}
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border p-4">
-                    <p className="font-medium">Improvement Area</p>
-
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {insights.weaknesses?.[0] ??
-                        "No weaknesses identified yet."}
-                    </p>
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => router.push("/insights")}
-                  >
-                    View Full Analysis
-                  </Button>
-                </>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  No insights available yet.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* AI Features */}
-        <div>
-          <Card className="h-full rounded-2xl">
-            <CardHeader>
-              <CardTitle>AI Features</CardTitle>
-            </CardHeader>
-
-            <CardContent className="space-y-3">
-              <Button
-                className="w-full"
-                onClick={() => router.push("/roadmap/generate")}
-              >
-                Generate AI Roadmap
-              </Button>
-
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => router.push("/insights")}
-              >
-                View AI Insights
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Career Progress */}
-      <Card className="rounded-2xl">
-        <CardHeader>
-          <CardTitle>Career Progress</CardTitle>
-
-          <CardDescription>Track your learning journey.</CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between rounded-xl border p-4">
-            <div>
-              <p className="text-sm text-muted-foreground">
-                Roadmap Completion
-              </p>
-
-              <p className="text-2xl font-bold">
-                {dashboard?.roadmapProgress ?? 0}%
-              </p>
-            </div>
-
-            <Target className="h-8 w-8 text-muted-foreground" />
-          </div>
-
-          <div className="flex items-center justify-between rounded-xl border p-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Tasks Completed</p>
-
-              <p className="text-2xl font-bold">
-                {dashboard?.completedTasks ?? 0}
-              </p>
-            </div>
-
-            <CheckCircle2 className="h-8 w-8 text-muted-foreground" />
-          </div>
-
-          <div className="flex items-center justify-between rounded-xl border p-4">
-            <div>
-              <p className="text-sm text-muted-foreground">LeetCode Solved</p>
-
-              <p className="text-2xl font-bold">
-                {dashboard?.leetcodeSolved ?? 0}
-              </p>
-            </div>
-
-            <Code2 className="h-8 w-8 text-muted-foreground" />
-          </div>
-        </CardContent>
-      </Card>
+      <CareerProgressCard dashboard={dashboard!} />
     </div>
   )
 }

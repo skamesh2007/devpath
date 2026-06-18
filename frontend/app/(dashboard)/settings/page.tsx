@@ -12,7 +12,7 @@ import {
   ArrowLeft,
 } from "lucide-react"
 import { logout } from "@/services/authService"
-import { ThemeSwitch } from "@/components/theme-switch"
+import { ThemeSwitch } from "@/components/theme/theme-switch"
 
 export default function SettingsPage() {
   const router = useRouter()
