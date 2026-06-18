@@ -3,13 +3,19 @@
 import { useEffect, useState } from "react"
 
 import { useAuthStore } from "@/store/authStore"
-import { DashboardResponse, getDashboard } from "@/services/dashboardService"
+import { getDashboard } from "@/services/dashboardService"
 
 import CareerProgressCard from "@/components/dashboard/CareerProgressCard"
 import AICoachCard from "@/components/dashboard/AICoachCard"
 
 import { getInsights } from "@/services/aiService"
 import { AIInsightsResponse } from "@/types/ai"
+
+import CareerMomentumCard from "@/components/dashboard/CareerMomentumCard"
+
+import { getCareerMomentum } from "@/services/dashboardService"
+
+import { CareerMomentumResponse, DashboardResponse } from "@/types/dashboard"
 
 import {
   Card,
@@ -46,9 +52,14 @@ export default function DashboardPage() {
   const [dashboardLoading, setDashboardLoading] = useState(true)
   const [insightsLoading, setInsightsLoading] = useState(false)
 
+  const [momentum, setMomentum] = useState<CareerMomentumResponse | null>(null)
+
   useEffect(() => {
-    getDashboard()
-      .then(setDashboard)
+    Promise.all([getDashboard(), getCareerMomentum()])
+      .then(([dashboardData, momentumData]) => {
+        setDashboard(dashboardData)
+        setMomentum(momentumData)
+      })
       .catch(console.error)
       .finally(() => setDashboardLoading(false))
   }, [])
@@ -202,7 +213,7 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-
+      {momentum && <CareerMomentumCard momentum={momentum} />}
 
       <AICoachCard
         insightsLoading={insightsLoading}
