@@ -44,19 +44,28 @@ export default function DashboardPage() {
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null)
   const [insights, setInsights] = useState<AIInsightsResponse | null>(null)
   const [dashboardLoading, setDashboardLoading] = useState(true)
-  const [insightsLoading, setInsightsLoading] = useState(true)
+  const [insightsLoading, setInsightsLoading] = useState(false)
 
   useEffect(() => {
     getDashboard()
       .then(setDashboard)
       .catch(console.error)
       .finally(() => setDashboardLoading(false))
-
-    getInsights()
-      .then(setInsights)
-      .catch(console.error)
-      .finally(() => setInsightsLoading(false))
   }, [])
+
+  const loadInsights = async () => {
+    try {
+      setInsightsLoading(true)
+
+      const data = await getInsights()
+
+      setInsights(data)
+    } catch (error) {
+      console.error("Failed to load insights", error)
+    } finally {
+      setInsightsLoading(false)
+    }
+  }
 
   const stats = dashboard
     ? [
@@ -193,7 +202,14 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      <AICoachCard insightsLoading={insightsLoading} insights={insights} router={router} />
+
+
+      <AICoachCard
+        insightsLoading={insightsLoading}
+        insights={insights}
+        router={router}
+        onGenerateInsights={loadInsights}
+      />
 
       <CareerProgressCard dashboard={dashboard!} />
     </div>

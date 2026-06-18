@@ -1,8 +1,11 @@
 import api from "@/lib/api";
 
-import { Roadmap, CreateRoadmapRequest, UpdateRoadmapRequest } from "@/types/roadmap";
-
-
+import {
+  Roadmap,
+  CreateRoadmapRequest,
+  UpdateRoadmapRequest,
+  RoadmapAnalyticsResponse
+} from "@/types/roadmap";
 
 export const getRoadmaps = async (): Promise<Roadmap[]> => {
   const response = await api.get("/roadmaps");
@@ -25,11 +28,8 @@ export const createRoadmap = async (
 
 export const updateRoadmap = async (
   roadmapId: number,
-  data: {
-    title: string;
-    description: string;
-  }
-) => {
+  data: UpdateRoadmapRequest
+): Promise<Roadmap> => {
   const response = await api.put(
     `/roadmaps/${roadmapId}`,
     data
@@ -44,3 +44,12 @@ export const deleteRoadmap = async (
   await api.delete(`/roadmaps/${roadmapId}`);
 };
 
+export const getRoadmapAnalytics = async (
+  roadmapId: number
+): Promise<RoadmapAnalyticsResponse> => {
+  const response = await api.get(
+    `/roadmaps/${roadmapId}/analytics`
+  );
+
+  return response.data;
+};

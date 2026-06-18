@@ -2,10 +2,14 @@
 
 import { useEffect, useState } from "react"
 
-import { getRoadmaps } from "@/services/roadmapService"
+import {
+  getRoadmaps,
+  deleteRoadmap,
+  getRoadmapAnalytics,
+} from "@/services/roadmapService"
 import { getTasks, updateTask } from "@/services/taskService"
 
-import { Roadmap, RoadmapTask } from "@/types/roadmap"
+import { Roadmap, RoadmapTask, RoadmapAnalyticsResponse } from "@/types/roadmap"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -15,7 +19,6 @@ import CreateRoadmapDialog from "@/components/roadmap/CreateRoadmapDialog"
 import CreateTaskDialog from "@/components/roadmap/CreateTaskDialog"
 
 import { Trash2 } from "lucide-react"
-import { deleteRoadmap } from "@/services/roadmapService"
 import { deleteTask } from "@/services/taskService"
 import DeleteConfirmDialog from "@/components/roadmap/DeleteConfirmDialog"
 
@@ -27,11 +30,18 @@ import EditTaskDialog from "@/components/roadmap/EditTaskDialog"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
+import RoadmapAnalyticsCard from "@/components/roadmap/RoadmapAnalyticsCard"
+
+import RoadmapLoading from "@/components/loading/RoadmapLoading"
+
 export default function RoadmapPage() {
   const [roadmaps, setRoadmaps] = useState<Roadmap[]>([])
   const [selectedRoadmap, setSelectedRoadmap] = useState<Roadmap | null>(null)
 
   const [tasks, setTasks] = useState<RoadmapTask[]>([])
+  const [analytics, setAnalytics] = useState<RoadmapAnalyticsResponse | null>(
+    null
+  )
 
   const [loading, setLoading] = useState(true)
 
@@ -47,7 +57,8 @@ export default function RoadmapPage() {
 
       if (data.length > 0) {
         setSelectedRoadmap(data[0])
-        await loadTasks(data[0].id)
+
+        await Promise.all([loadTasks(data[0].id), loadAnalytics(data[0].id)])
       }
     } catch (error) {
       console.error("Failed to load roadmaps", error)
@@ -65,9 +76,19 @@ export default function RoadmapPage() {
     }
   }
 
+  const loadAnalytics = async (roadmapId: number) => {
+    try {
+      const data = await getRoadmapAnalytics(roadmapId)
+      setAnalytics(data)
+    } catch (error) {
+      console.error("Failed to load analytics", error)
+    }
+  }
+
   const selectRoadmap = async (roadmap: Roadmap) => {
     setSelectedRoadmap(roadmap)
-    await loadTasks(roadmap.id)
+
+    await Promise.all([loadTasks(roadmap.id), loadAnalytics(roadmap.id)])
   }
 
   const toggleTask = async (taskId: number, completed: boolean) => {
@@ -78,7 +99,10 @@ export default function RoadmapPage() {
 
       if (!selectedRoadmap) return
 
-      await loadTasks(selectedRoadmap.id)
+      await Promise.all([
+        loadTasks(selectedRoadmap.id),
+        loadAnalytics(selectedRoadmap.id),
+      ])
 
       const updatedRoadmaps = await getRoadmaps()
 
@@ -123,7 +147,10 @@ export default function RoadmapPage() {
 
       if (!selectedRoadmap) return
 
-      await loadTasks(selectedRoadmap.id)
+      await Promise.all([
+        loadTasks(selectedRoadmap.id),
+        loadAnalytics(selectedRoadmap.id),
+      ])
 
       const updatedRoadmaps = await getRoadmaps()
 
@@ -140,12 +167,8 @@ export default function RoadmapPage() {
   }
 
   if (loading) {
-    return (
-      <div className="p-6">
-        <p className="text-muted-foreground">Loading roadmaps...</p>
-      </div>
-    )
-  }
+  return <RoadmapLoading />
+}
 
   return (
     <div className="grid h-full gap-6 p-6 lg:grid-cols-3">
@@ -238,7 +261,10 @@ export default function RoadmapPage() {
               <CreateTaskDialog
                 roadmapId={selectedRoadmap.id}
                 onCreated={async () => {
-                  await loadTasks(selectedRoadmap.id)
+                  await Promise.all([
+                    loadTasks(selectedRoadmap.id),
+                    loadAnalytics(selectedRoadmap.id),
+                  ])
 
                   const updatedRoadmaps = await getRoadmaps()
 
@@ -256,7 +282,7 @@ export default function RoadmapPage() {
             )}
           </div>
         </CardHeader>
-
+        {analytics && <RoadmapAnalyticsCard analytics={analytics} />}
         <CardContent className="space-y-3">
           {!selectedRoadmap && (
             <p className="text-sm text-muted-foreground">Select a roadmap.</p>

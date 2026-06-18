@@ -1,8 +1,13 @@
-
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Sparkles } from "lucide-react"
 import { AIInsightsResponse } from "@/types/ai"
 import { useRouter } from "next/navigation"
@@ -11,12 +16,14 @@ type AICoachCardProps = {
   insightsLoading: boolean
   insights: AIInsightsResponse | null
   router: ReturnType<typeof useRouter>
+  onGenerateInsights: () => void
 }
 
 export default function AICoachCard({
   insightsLoading,
   insights,
   router,
+  onGenerateInsights,
 }: AICoachCardProps) {
   return (
     <div className="grid gap-6 lg:grid-cols-3">
@@ -24,14 +31,30 @@ export default function AICoachCard({
       <div className="lg:col-span-2">
         <Card className="h-full rounded-2xl">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5" />
-              AI Career Coach
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5" />
+                  AI Career Coach
+                </CardTitle>
 
-            <CardDescription>
-              Personalized guidance based on your progress.
-            </CardDescription>
+                <CardDescription>
+                  Personalized guidance based on your progress.
+                </CardDescription>
+              </div>
+
+              <Button
+                size="sm"
+                onClick={onGenerateInsights}
+                disabled={insightsLoading || !!insights}
+              >
+                {insightsLoading
+                  ? "Generating..."
+                  : insights
+                    ? "Generated"
+                    : "Generate"}
+              </Button>
+            </div>
           </CardHeader>
 
           <CardContent className="space-y-4">
