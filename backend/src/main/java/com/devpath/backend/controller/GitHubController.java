@@ -1,5 +1,6 @@
 package com.devpath.backend.controller;
 
+import com.devpath.backend.dto.GitHubRepositoriesResponse;
 import com.devpath.backend.dto.GitHubStatsResponse;
 import com.devpath.backend.dto.GitHubUsernameRequest;
 import com.devpath.backend.dto.GitHubUsernameResponse;
@@ -35,6 +36,13 @@ public class GitHubController {
     public ResponseEntity<GitHubStatsResponse> getStats() {
         return ResponseEntity.ok(
                 gitHubService.getStats()
+        );
+    }
+
+    @GetMapping("/repositories")
+    public ResponseEntity<GitHubRepositoriesResponse> getRepositories() {
+        return ResponseEntity.ok(
+                gitHubService.getRepositories()
         );
     }
 }

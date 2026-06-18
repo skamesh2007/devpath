@@ -1,8 +1,6 @@
 package com.devpath.backend.service;
 
-import com.devpath.backend.dto.GitHubStatsResponse;
-import com.devpath.backend.dto.GitHubUsernameRequest;
-import com.devpath.backend.dto.GitHubUsernameResponse;
+import com.devpath.backend.dto.*;
 import com.devpath.backend.entity.User;
 import com.devpath.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -132,6 +130,76 @@ public class GitHubService {
 
         return GitHubUsernameResponse.builder()
                 .githubUsername(user.getGithubUsername())
+                .build();
+    }
+
+    public GitHubRepositoriesResponse getRepositories() {
+
+        User user = authService.getCurrentUser();
+
+        String githubUsername = user.getGithubUsername();
+
+        if (githubUsername == null || githubUsername.isBlank()) {
+            throw new IllegalStateException(
+                    "GitHub username not configured"
+            );
+        }
+
+        List<Map<String, Object>> repos =
+                githubRestClient.get()
+                        .uri(
+                                "/users/{username}/repos?per_page=100&sort=updated",
+                                githubUsername
+                        )
+                        .retrieve()
+                        .body(List.class);
+
+        if (repos == null) {
+            repos = List.of();
+        }
+
+        int totalStars = repos.stream()
+                .mapToInt(repo ->
+                        ((Number) repo.get("stargazers_count"))
+                                .intValue()
+                )
+                .sum();
+
+        List<GitHubRepositoryResponse> repositories =
+                repos.stream()
+                        .sorted((a, b) -> Integer.compare(
+                                ((Number) b.get("stargazers_count")).intValue(),
+                                ((Number) a.get("stargazers_count")).intValue()
+                        ))
+                        .limit(10)
+                        .map(repo ->
+                                GitHubRepositoryResponse.builder()
+                                        .name((String) repo.get("name"))
+                                        .description(
+                                                (String) repo.get("description")
+                                        )
+                                        .language(
+                                                (String) repo.get("language")
+                                        )
+                                        .stars(
+                                                ((Number) repo.get("stargazers_count"))
+                                                        .intValue()
+                                        )
+                                        .forks(
+                                                ((Number) repo.get("forks_count"))
+                                                        .intValue()
+                                        )
+                                        .repositoryUrl(
+                                                (String) repo.get("html_url")
+                                        )
+                                        .build()
+                        )
+                        .toList();
+
+        return GitHubRepositoriesResponse.builder()
+                .totalRepositories(repos.size())
+                .totalStars(totalStars)
+                .repositories(repositories)
                 .build();
     }
 }

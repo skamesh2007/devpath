@@ -13,3 +13,21 @@ export interface GitHubStatsResponse {
 
   totalStars: number;
 }
+
+export interface GitHubRepositoryResponse {
+  name: string
+  description: string | null
+  language: string | null
+
+  stars: number
+  forks: number
+
+  repositoryUrl: string
+}
+
+export interface GitHubRepositoriesResponse {
+  totalRepositories: number
+  totalStars: number
+
+  repositories: GitHubRepositoryResponse[]
+}

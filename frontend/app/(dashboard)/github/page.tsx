@@ -5,12 +5,20 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { FaGithub } from "react-icons/fa"
 import { ExternalLink, Settings2 } from "lucide-react"
-import { getGitHubUsername, getGitHubStats } from "@/services/githubService"
+import {
+  getGitHubUsername,
+  getGitHubStats,
+  getGitHubRepositories,
+} from "@/services/githubService"
 import { GitHubStatsResponse } from "@/types/github"
 
 import GitHubLoading from "@/components/loading/GitHubLoading"
 
 import Image from "next/image"
+
+import RepositoryList from "@/components/github/RepositoryList"
+
+import { GitHubRepositoriesResponse } from "@/types/github"
 
 // ─── Stat card ──────────────────────────────────────────────────────────────
 
@@ -33,6 +41,8 @@ export default function GitHubPage() {
   const [stats, setStats] = useState<GitHubStatsResponse | null>(null)
   const [hasLinked, setHasLinked] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [repositories, setRepositories] =
+    useState<GitHubRepositoriesResponse | null>(null)
 
   useEffect(() => {
     const load = async () => {
@@ -46,8 +56,14 @@ export default function GitHubPage() {
         }
 
         setHasLinked(true)
-        const statsRes = await getGitHubStats()
+
+        const [statsRes, repositoriesRes] = await Promise.all([
+          getGitHubStats(),
+          getGitHubRepositories(),
+        ])
+
         setStats(statsRes)
+        setRepositories(repositoriesRes)
       } catch {
         setHasLinked(false)
         setStats(null)
@@ -143,6 +159,21 @@ export default function GitHubPage() {
           <StatCard label="Stars" value={stats?.totalStars ?? 0} />
         </div>
       </div>
+
+      {repositories && (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <StatCard
+              label="Total Repos"
+              value={repositories.totalRepositories}
+            />
+
+            <StatCard label="Total Stars" value={repositories.totalStars} />
+          </div>
+
+          <RepositoryList repositories={repositories.repositories} />
+        </>
+      )}
 
       {/* Manage link */}
       <div className="flex justify-center">
