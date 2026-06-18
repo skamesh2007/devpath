@@ -31,3 +31,10 @@ export interface GitHubRepositoriesResponse {
 
   repositories: GitHubRepositoryResponse[]
 }
+
+export interface GitHubActivityResponse {
+  repositoriesUpdatedLast30Days: number
+  repositoriesCreatedLast30Days: number
+  activeRepositories: number
+  mostRecentlyUpdatedRepository: string | null
+}

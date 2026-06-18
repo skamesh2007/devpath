@@ -20,6 +20,12 @@ import RepositoryList from "@/components/github/RepositoryList"
 
 import { GitHubRepositoriesResponse } from "@/types/github"
 
+import GitHubActivityCard from "@/components/github/GitHubActivityCard"
+
+import { GitHubActivityResponse } from "@/types/github"
+
+import { getGitHubActivity } from "@/services/githubService"
+
 // ─── Stat card ──────────────────────────────────────────────────────────────
 
 function StatCard({ label, value }: { label: string; value: number }) {
@@ -43,6 +49,7 @@ export default function GitHubPage() {
   const [loading, setLoading] = useState(true)
   const [repositories, setRepositories] =
     useState<GitHubRepositoriesResponse | null>(null)
+  const [activity, setActivity] = useState<GitHubActivityResponse | null>(null)
 
   useEffect(() => {
     const load = async () => {
@@ -57,10 +64,15 @@ export default function GitHubPage() {
 
         setHasLinked(true)
 
-        const [statsRes, repositoriesRes] = await Promise.all([
+        const [statsRes, repositoriesRes, activityRes] = await Promise.all([
           getGitHubStats(),
           getGitHubRepositories(),
+          getGitHubActivity(),
         ])
+
+        setStats(statsRes)
+        setRepositories(repositoriesRes)
+        setActivity(activityRes)
 
         setStats(statsRes)
         setRepositories(repositoriesRes)
@@ -174,6 +186,8 @@ export default function GitHubPage() {
           <RepositoryList repositories={repositories.repositories} />
         </>
       )}
+
+      {activity && <GitHubActivityCard activity={activity} />}
 
       {/* Manage link */}
       <div className="flex justify-center">

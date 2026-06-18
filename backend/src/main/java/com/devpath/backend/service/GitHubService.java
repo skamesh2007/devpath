@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -200,6 +201,164 @@ public class GitHubService {
                 .totalRepositories(repos.size())
                 .totalStars(totalStars)
                 .repositories(repositories)
+                .build();
+    }
+
+    public GitHubLanguagesResponse getLanguages() {
+
+        User user = authService.getCurrentUser();
+
+        String githubUsername = user.getGithubUsername();
+
+        if (githubUsername == null || githubUsername.isBlank()) {
+            throw new IllegalStateException(
+                    "GitHub username not configured"
+            );
+        }
+
+        List<Map<String, Object>> repos =
+                githubRestClient.get()
+                        .uri(
+                                "/users/{username}/repos?per_page=100",
+                                githubUsername
+                        )
+                        .retrieve()
+                        .body(List.class);
+
+        if (repos == null) {
+            repos = List.of();
+        }
+
+        Map<String, Long> languageCounts =
+                repos.stream()
+                        .map(repo -> (String) repo.get("language"))
+                        .filter(language -> language != null)
+                        .collect(
+                                java.util.stream.Collectors.groupingBy(
+                                        language -> language,
+                                        java.util.stream.Collectors.counting()
+                                )
+                        );
+
+        long totalRepositories =
+                languageCounts.values()
+                        .stream()
+                        .mapToLong(Long::longValue)
+                        .sum();
+
+        List<GitHubLanguageResponse> languages =
+                languageCounts.entrySet()
+                        .stream()
+                        .sorted((a, b) ->
+                                Long.compare(
+                                        b.getValue(),
+                                        a.getValue()
+                                )
+                        )
+                        .map(entry ->
+                                GitHubLanguageResponse.builder()
+                                        .language(entry.getKey())
+                                        .repositoryCount(
+                                                entry.getValue().intValue()
+                                        )
+                                        .percentage(
+                                                totalRepositories == 0
+                                                        ? 0
+                                                        : (entry.getValue() * 100.0)
+                                                          / totalRepositories
+                                        )
+                                        .build()
+                        )
+                        .toList();
+
+        return GitHubLanguagesResponse.builder()
+                .languages(languages)
+                .build();
+    }
+
+    public GitHubActivityResponse getActivity() {
+
+        User user = authService.getCurrentUser();
+
+        String githubUsername = user.getGithubUsername();
+
+        if (githubUsername == null || githubUsername.isBlank()) {
+            throw new IllegalStateException(
+                    "GitHub username not configured"
+            );
+        }
+
+        List<Map<String, Object>> repos =
+                githubRestClient.get()
+                        .uri(
+                                "/users/{username}/repos?per_page=100&sort=updated",
+                                githubUsername
+                        )
+                        .retrieve()
+                        .body(List.class);
+
+        if (repos == null) {
+            repos = List.of();
+        }
+
+        OffsetDateTime thirtyDaysAgo =
+                OffsetDateTime.now().minusDays(30);
+
+        int updatedLast30Days = (int) repos.stream()
+                .filter(repo -> {
+                    String updatedAt =
+                            (String) repo.get("updated_at");
+
+                    return updatedAt != null &&
+                            OffsetDateTime.parse(updatedAt)
+                                    .isAfter(thirtyDaysAgo);
+                })
+                .count();
+
+        int createdLast30Days = (int) repos.stream()
+                .filter(repo -> {
+                    String createdAt =
+                            (String) repo.get("created_at");
+
+                    return createdAt != null &&
+                            OffsetDateTime.parse(createdAt)
+                                    .isAfter(thirtyDaysAgo);
+                })
+                .count();
+
+        String mostRecentlyUpdatedRepository =
+                repos.stream()
+                        .max((a, b) -> {
+                            OffsetDateTime first =
+                                    OffsetDateTime.parse(
+                                            (String) a.get("pushed_at")
+                                    );
+
+                            OffsetDateTime second =
+                                    OffsetDateTime.parse(
+                                            (String) b.get("pushed_at")
+                                    );
+
+                            return first.compareTo(second);
+                        })
+                        .map(repo ->
+                                (String) repo.get("name")
+                        )
+                        .orElse(null);
+
+        return GitHubActivityResponse.builder()
+                .repositoriesUpdatedLast30Days(
+                        updatedLast30Days
+                )
+                .repositoriesCreatedLast30Days(
+                        createdLast30Days
+                )
+                .activeRepositories(
+                        updatedLast30Days
+                )
+                .mostRecentlyUpdatedRepository(
+                        mostRecentlyUpdatedRepository
+                )
                 .build();
     }
 }

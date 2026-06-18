@@ -4,6 +4,7 @@ import {
   GitHubStatsResponse,
   GitHubUsernameResponse,
   GitHubRepositoriesResponse,
+  GitHubActivityResponse,
 } from "@/types/github"
 
 export interface GitHubUsernameRequest {
@@ -35,3 +36,9 @@ export const getGitHubRepositories =
 
     return response.data
   }
+
+export const getGitHubActivity = async (): Promise<GitHubActivityResponse> => {
+  const response = await api.get("/github/activity")
+
+  return response.data
+}

@@ -1,9 +1,6 @@
 package com.devpath.backend.controller;
 
-import com.devpath.backend.dto.GitHubRepositoriesResponse;
-import com.devpath.backend.dto.GitHubStatsResponse;
-import com.devpath.backend.dto.GitHubUsernameRequest;
-import com.devpath.backend.dto.GitHubUsernameResponse;
+import com.devpath.backend.dto.*;
 import com.devpath.backend.service.GitHubService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +40,22 @@ public class GitHubController {
     public ResponseEntity<GitHubRepositoriesResponse> getRepositories() {
         return ResponseEntity.ok(
                 gitHubService.getRepositories()
+        );
+    }
+
+    @GetMapping("/languages")
+    public ResponseEntity<GitHubLanguagesResponse> getLanguages() {
+
+        return ResponseEntity.ok(
+                gitHubService.getLanguages()
+        );
+    }
+
+    @GetMapping("/activity")
+    public ResponseEntity<GitHubActivityResponse> getActivity() {
+
+        return ResponseEntity.ok(
+                gitHubService.getActivity()
         );
     }
 }
