@@ -39,33 +39,20 @@ export default function DashboardPage() {
   const router = useRouter()
 
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null)
-
-  const [loading, setLoading] = useState(true)
   const [insights, setInsights] = useState<AIInsightsResponse | null>(null)
+  const [dashboardLoading, setDashboardLoading] = useState(true)
+  const [insightsLoading, setInsightsLoading] = useState(true)
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [dashboardResult, insightsResult] = await Promise.allSettled([
-          getDashboard(),
-          getInsights(),
-        ])
+    getDashboard()
+      .then(setDashboard)
+      .catch(console.error)
+      .finally(() => setDashboardLoading(false))
 
-        if (dashboardResult.status === "fulfilled") {
-          setDashboard(dashboardResult.value)
-        }
-
-        if (insightsResult.status === "fulfilled") {
-          setInsights(insightsResult.value)
-        }
-      } catch (error) {
-        console.error(error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadData()
+    getInsights()
+      .then(setInsights)
+      .catch(console.error)
+      .finally(() => setInsightsLoading(false))
   }, [])
 
   const stats = dashboard
@@ -104,8 +91,12 @@ export default function DashboardPage() {
       ]
     : []
 
-  if (loading) {
+  if (dashboardLoading) {
     return <DashboardLoading />
+  }
+
+  if (!dashboard && !dashboardLoading) {
+    return <div className="p-6">Failed to load dashboard data.</div>
   }
 
   return (
@@ -215,7 +206,12 @@ export default function DashboardPage() {
             </CardHeader>
 
             <CardContent className="space-y-4">
-              {insights ? (
+              {insightsLoading ? (
+                <>
+                  <div className="h-20 animate-pulse rounded-xl border bg-muted" />
+                  <div className="h-20 animate-pulse rounded-xl border bg-muted" />
+                </>
+              ) : insights ? (
                 <>
                   <div className="rounded-xl border p-4">
                     <p className="font-medium">Recommended Next Step</p>
