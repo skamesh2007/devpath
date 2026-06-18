@@ -23,6 +23,7 @@ import {
 import { getGitHubUsername, saveGitHubUsername } from "@/services/githubService"
 
 import EditProfileLoading from "@/components/loading/EditProfileLoading"
+import ChangePasswordCard from "@/components/settings/ChangePasswordCard"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

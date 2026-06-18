@@ -1,9 +1,6 @@
 package com.devpath.backend.service;
 
-import com.devpath.backend.dto.AuthResponse;
-import com.devpath.backend.dto.LoginRequest;
-import com.devpath.backend.dto.RegisterRequest;
-import com.devpath.backend.dto.UpdateProfileRequest;
+import com.devpath.backend.dto.*;
 import com.devpath.backend.entity.User;
 import com.devpath.backend.repository.UserRepository;
 import com.devpath.backend.security.JwtService;
@@ -136,5 +133,35 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
+    public void changePassword(
+            ChangePasswordRequest request
+    ) {
+
+        User user = getCurrentUser();
+
+        if (!passwordEncoder.matches(
+                request.getCurrentPassword(),
+                user.getPassword()
+        )) {
+            throw new IllegalArgumentException(
+                    "Current password is incorrect"
+            );
+        }
+
+        if (request.getNewPassword() == null
+                || request.getNewPassword().length() < 6) {
+            throw new IllegalArgumentException(
+                    "Password must be at least 6 characters"
+            );
+        }
+
+        user.setPassword(
+                passwordEncoder.encode(
+                        request.getNewPassword()
+                )
+        );
+
+        userRepository.save(user);
+    }
 
 }

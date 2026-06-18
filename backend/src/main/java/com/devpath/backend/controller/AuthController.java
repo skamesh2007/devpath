@@ -1,9 +1,6 @@
 package com.devpath.backend.controller;
 
-import com.devpath.backend.dto.AuthResponse;
-import com.devpath.backend.dto.LoginRequest;
-import com.devpath.backend.dto.RegisterRequest;
-import com.devpath.backend.dto.UpdateProfileRequest;
+import com.devpath.backend.dto.*;
 import com.devpath.backend.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +38,16 @@ public class AuthController {
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         return ResponseEntity.ok(authService.updateProfile(userDetails.getUsername(), request));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+            @RequestBody ChangePasswordRequest request
+    ) {
+
+        authService.changePassword(request);
+
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/health")

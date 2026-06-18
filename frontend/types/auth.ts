@@ -32,3 +32,8 @@ export type User = {
   bio?: string;
   role?: string;
 };
+
+export interface ChangePasswordRequest {
+  currentPassword: string
+  newPassword: string
+}

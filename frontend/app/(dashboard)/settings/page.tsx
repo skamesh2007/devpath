@@ -96,19 +96,22 @@ export default function SettingsPage() {
 
         <div className="border-t" />
 
-        <button className="flex w-full items-center justify-between px-5 py-4 text-left transition hover:bg-muted/50">
+        <Link
+          href="/settings/privacy"
+          className="flex items-center justify-between px-5 py-4 transition hover:bg-muted/50"
+        >
           <div className="flex items-center gap-3">
             <Shield className="h-5 w-5" />
             <div>
-              <p className="font-medium">Privacy</p>
+              <p className="font-medium">Privacy &amp; Security</p>
               <p className="text-sm text-muted-foreground">
-                Manage account privacy
+                Change your password and manage account security
               </p>
             </div>
           </div>
 
           <ChevronRight className="h-4 w-4" />
-        </button>
+        </Link>
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-red-200 bg-red-50/40 dark:border-red-900 dark:bg-red-950/10">
