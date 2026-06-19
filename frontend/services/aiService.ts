@@ -18,7 +18,13 @@ export const generateRoadmap = async (
 
 export const getInsights =
   async (): Promise<AIInsightsResponse> => {
-    const response = await api.get("/ai/insights");
+    const response = await api.post("/ai/insights");
 
     return response.data;
   };
+
+export const getSavedInsights = async (): Promise<AIInsightsResponse> => {
+  const response = await api.get("/ai/insights");
+
+  return response.data;
+}

@@ -26,3 +26,7 @@ server:
 
 github:
   token: ${GITHUB_TOKEN}
+
+ollama:
+  base-url: ${OLLAMA_BASE_URL}
+  model: ${OLLAMA_MODEL}

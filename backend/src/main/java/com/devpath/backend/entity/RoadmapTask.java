@@ -2,13 +2,11 @@ package com.devpath.backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
 import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 
 @Getter
 @Setter
@@ -38,10 +36,9 @@ public class RoadmapTask {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private TaskPriority priority = TaskPriority.MEDIUM;
 
-    @Column
-    private Integer estimatedHours;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
@@ -53,4 +50,15 @@ public class RoadmapTask {
 
     @Column
     private LocalDateTime completedAt;
+
+    @Column(nullable = false)
+    @Builder.Default
+    @Max(500)
+    private Integer estimatedHours = 0;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+
 }

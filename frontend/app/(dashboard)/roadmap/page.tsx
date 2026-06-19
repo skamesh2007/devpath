@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 
 import {
   getRoadmaps,
@@ -41,25 +41,25 @@ export default function RoadmapPage() {
   )
   const [loading, setLoading] = useState(true)
 
-  const loadTasks = async (roadmapId: number) => {
+  const loadTasks = useCallback(async (roadmapId: number) => {
     try {
       const data = await getTasks(roadmapId)
       setTasks(data)
     } catch (error) {
       console.error("Failed to load tasks", error)
     }
-  }
+  }, [])
 
-  const loadAnalytics = async (roadmapId: number) => {
+  const loadAnalytics = useCallback(async (roadmapId: number) => {
     try {
       const data = await getRoadmapAnalytics(roadmapId)
       setAnalytics(data)
     } catch (error) {
       console.error("Failed to load analytics", error)
     }
-  }
+  }, [])
 
-  const loadRoadmaps = async () => {
+  const loadRoadmaps = useCallback(async () => {
     try {
       setLoading(true)
 
@@ -80,14 +80,10 @@ export default function RoadmapPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [loadTasks, loadAnalytics])
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      void loadRoadmaps()
-    }, 0)
-
-    return () => window.clearTimeout(timer)
+    void loadRoadmaps()
   }, [loadRoadmaps])
 
   const selectRoadmap = async (roadmap: Roadmap) => {

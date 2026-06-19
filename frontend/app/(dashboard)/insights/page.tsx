@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 
-import { getInsights } from "@/services/aiService"
+import { getInsights, getSavedInsights } from "@/services/aiService"
 import { AIInsightsResponse } from "@/types/ai"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,10 +10,13 @@ import {
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
+  RefreshCw,
   Sparkles,
 } from "lucide-react"
 
 import InsightsLoading from "@/components/loading/InsightsLoading"
+
+import axios from "axios"
 
 type Section = {
   title: string
@@ -33,20 +36,46 @@ const colorClasses = {
 export default function InsightsPage() {
   const [insights, setInsights] = useState<AIInsightsResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState("")
+  const [refreshError, setRefreshError] = useState("")
 
   useEffect(() => {
     void (async () => {
       try {
-        const data = await getInsights()
-        setInsights(data)
-      } catch {
-        setError("Failed to load AI insights")
+        const saved = await getSavedInsights()
+        setInsights(saved)
+      } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 404) {
+          // No insights saved yet — generate them for the first time.
+          try {
+            const generated = await getInsights()
+            setInsights(generated)
+          } catch {
+            setError("Failed to generate AI insights")
+          }
+        } else {
+          setError("Failed to load AI insights")
+        }
       } finally {
         setLoading(false)
       }
     })()
   }, [])
+
+  const handleRefreshInsights = async () => {
+    setRefreshing(true)
+    setRefreshError("")
+
+    try {
+      const generated = await getInsights()
+      setInsights(generated)
+    } catch {
+      setRefreshError("Failed to refresh AI insights. Please try again later.")
+    } finally {
+      setRefreshing(false)
+    }
+  }
 
   if (loading) {
     return <InsightsLoading />
@@ -114,20 +143,41 @@ export default function InsightsPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/10">
-          <Sparkles className="h-5 w-5 text-violet-500" />
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/10">
+            <Sparkles className="h-5 w-5 text-violet-500" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              AI Insights
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              A breakdown of your progress, generated from your activity.
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            AI Insights
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            A breakdown of your progress, generated from your activity.
+
+        <button
+          type="button"
+          onClick={handleRefreshInsights}
+          disabled={refreshing}
+          aria-label="Refresh AI insights"
+          title="Refresh AI insights"
+          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+        </button>
+      </div>
+
+      {refreshError && (
+        <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+          <p className="text-sm text-red-600 dark:text-red-400">
+            {refreshError}
           </p>
         </div>
-      </div>
+      )}
 
       {sections.map((section) => {
         const Icon = section.icon
@@ -150,10 +200,7 @@ export default function InsightsPage() {
               {section.items && section.items.length > 0 ? (
                 <ul className="space-y-2">
                   {section.items.map((item, index) => (
-                    <li
-                      key={index}
-                      className="flex items-start gap-2 text-sm"
-                    >
+                    <li key={index} className="flex items-start gap-2 text-sm">
                       <span
                         className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${colors.bg.replace("/10", "")}`}
                       />

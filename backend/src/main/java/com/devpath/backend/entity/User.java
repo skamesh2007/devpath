@@ -72,4 +72,8 @@ public class User implements UserDetails {
     public enum Role {
         USER, ADMIN
     }
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private AIInsights aiInsights;
+
 }
