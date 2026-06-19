@@ -1,0 +1,29 @@
+# DevPath Startup
+
+### 1. Model (Ollama)
+
+```powershell
+ollama list
+ollama serve
+ollama run llama3.1:8b
+```
+
+### 2. Backend
+
+```powershell
+cd devpath-backend
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local"
+```
+
+### 3. Frontend
+
+```powershell
+cd devpath-frontend
+npm run dev
+```
+
+Start order:
+
+```text
+Model → Backend → Frontend
+```
