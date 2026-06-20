@@ -127,7 +127,6 @@ export default function DashboardPage() {
               Dashboard
             </Badge>
           </div>
-          pow
           <h1 className="truncate text-2xl font-bold tracking-tight sm:text-3xl">
             Welcome, {user?.username ?? "User"}!
           </h1>

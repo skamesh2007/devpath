@@ -3,6 +3,9 @@ import { getMyLeetCodeStats } from "@/services/leetcodeService"
 import { LeetCodeStatsResponse } from "@/types/leetcode"
 
 export default function RecentSubmissions({stats}: {stats: LeetCodeStatsResponse}) {
+
+  console.log("RecentSubmissions stats:", stats)
+
   return (
     <div>
       {stats?.recentSubmissions && stats.recentSubmissions.length > 0 && (

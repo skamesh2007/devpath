@@ -2,6 +2,7 @@ package com.devpath.backend.service.leetcode;
 
 import com.devpath.backend.dto.leetcode.LeetCodeStatsResponse;
 import com.devpath.backend.entity.LeetCodeStats;
+import com.devpath.backend.entity.RecentSubmission;
 import com.devpath.backend.entity.User;
 import com.devpath.backend.repository.LeetCodeStatsRepository;
 import com.devpath.backend.repository.UserRepository;
@@ -61,12 +62,13 @@ public class LeetCodeService {
 
     // ── Fetch stats for the logged-in user's stored LeetCode username ─────────
     public LeetCodeStats getStatsForCurrentUser(User user) {
-        return leetCodeStatsRepository
-                .findByUsername(user.getLeetCodeUsername())
+
+        LeetCodeStats stats = leetCodeStatsRepository
+                .findByUser(user)
                 .orElse(null);
 
-
-
+        
+        return stats;
     }
 
     // ── Fetch stats by any public LeetCode username ───────────────────────────
@@ -95,6 +97,8 @@ public class LeetCodeService {
 
 
         JsonNode root = objectMapper.readTree(response.getBody());
+
+        System.out.println("Root" + root);
 
         return mapToDto(root, username);
     }
@@ -130,7 +134,7 @@ public class LeetCodeService {
             submissions.add(sub);
         }
         dto.setRecentSubmissions(submissions);
-
+        System.out.println("DTO" + dto);
         return dto;
     }
 
@@ -160,6 +164,8 @@ public class LeetCodeService {
         LeetCodeStatsResponse response =
                 fetchStats(user.getLeetCodeUsername());
 
+        System.out.println("Response" + response);
+
         LeetCodeStats stats = leetCodeStatsRepository
                 .findByUser(user)
                 .orElseGet(() -> LeetCodeStats.builder()
@@ -173,6 +179,24 @@ public class LeetCodeService {
         stats.setHardSolved(response.getHardSolved());
         stats.setLastUpdated(LocalDateTime.now());
         stats.setUsername(response.getUsername());
+        stats.getRecentSubmissions().clear();
+
+        for (LeetCodeStatsResponse.RecentSubmission dto :
+                response.getRecentSubmissions()) {
+
+            RecentSubmission submission = RecentSubmission.builder()
+                    .title(dto.getTitle())
+                    .titleSlug(dto.getTitleSlug())
+                    .statusDisplay(dto.getStatusDisplay())
+                    .lang(dto.getLang())
+                    .timestamp(dto.getTimestamp())
+                    .leetCodeStats(stats)
+                    .build();
+
+            stats.getRecentSubmissions().add(submission);
+        }
+
+        System.out.println("Stats" + stats);
 
         leetCodeStatsRepository.save(stats);
     }

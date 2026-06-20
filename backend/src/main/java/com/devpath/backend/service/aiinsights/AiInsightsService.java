@@ -84,8 +84,17 @@ public class AiInsightsService {
         int progress = totalTasks == 0 ? 0 : (completedTasks * 100) / totalTasks;
 
         return """
-                Return only valid JSON for factual learning progress insights.
-
+                Return only valid JSON.
+                
+                Use only the provided metrics.
+                
+                A strength must be directly supported by the data.
+                A weakness must be directly supported by the data.
+                Do not infer motivation, discipline, focus, consistency,
+                confidence, personality traits, or causes.
+                
+                Each array must contain 1-3 short items.
+                
                 Progress:
                 progressPercent=%d
                 completedTasks=%d
@@ -93,27 +102,32 @@ public class AiInsightsService {
                 totalTasks=%d
                 overdueTasks=%d
                 highPriorityPendingTasks=%d
-
+                
                 Roadmaps:
                 %s
-
-                Return exactly:
+                
+                Output format:
+                
                 {
-                  "strengths": ["fact-based strength", "fact-based strength"],
-                  "weaknesses": ["fact-based weakness", "fact-based weakness"],
-                  "nextActions": ["specific action", "specific action", "specific action"]
+                  "strengths": [],
+                  "weaknesses": [],
+                  "nextActions": []
                 }
-
-                Rules:
-                - Use only the progress numbers and roadmap data above.
-                - Do not mention motivation, discipline, laziness, focus, confidence, or personality.
-                - Do not guess reasons for pending or overdue tasks.
-                - If completedTasks is 0, do not call it a strength.
-                - If overdueTasks is 0, do not mention overdue work as a weakness.
-                - Keep every item short and concrete.
-                Do not return empty arrays.
-                """
-                .formatted(
+                
+                Examples of valid strengths:
+                - "15 tasks completed"
+                - "AI Engineer roadmap is 62%% complete"
+                
+                Examples of valid weaknesses:
+                - "36 tasks remaining"
+                - "5 high-priority tasks pending"
+                
+                Examples of valid actions:
+                - "Complete a high-priority pending task"
+                - "Continue the AI Engineer roadmap"
+                
+                Return JSON only.
+                """.formatted(
                         progress,
                         completedTasks,
                         pendingTasks,
