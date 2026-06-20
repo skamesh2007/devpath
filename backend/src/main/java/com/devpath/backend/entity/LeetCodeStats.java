@@ -25,6 +25,9 @@ public class LeetCodeStats {
     @JsonIgnore
     private User user;
 
+    @Column(nullable = false)
+    private String username;
+
     private Integer ranking;
 
     private Integer totalSolved;

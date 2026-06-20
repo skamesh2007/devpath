@@ -27,7 +27,7 @@ public class LeetCodeController {
     public ResponseEntity<String> saveUsername(
             @RequestBody LeetCodeUsernameRequest request,
             Authentication authentication
-    ) {
+    ) throws JsonProcessingException {
 
         String username = authentication.getName();
 

@@ -94,28 +94,22 @@ export default function RoadmapPage() {
 
   const toggleTask = async (taskId: number, completed: boolean) => {
     try {
-      await updateTask(taskId, {
-        completed,
-      })
+      await updateTask(taskId, { completed })
 
       if (!selectedRoadmap) return
 
-      await Promise.all([
+      const [, , updatedRoadmaps] = await Promise.all([
         loadTasks(selectedRoadmap.id),
         loadAnalytics(selectedRoadmap.id),
+        getRoadmaps(),
       ])
-
-      const updatedRoadmaps = await getRoadmaps()
 
       setRoadmaps(updatedRoadmaps)
 
       const updatedRoadmap = updatedRoadmaps.find(
         (r) => r.id === selectedRoadmap.id
       )
-
-      if (updatedRoadmap) {
-        setSelectedRoadmap(updatedRoadmap)
-      }
+      if (updatedRoadmap) setSelectedRoadmap(updatedRoadmap)
     } catch (error) {
       console.error("Failed to update task", error)
     }
@@ -148,19 +142,20 @@ export default function RoadmapPage() {
 
       if (!selectedRoadmap) return
 
-      await Promise.all([
+      const [, , updatedRoadmaps] = await Promise.all([
         loadTasks(selectedRoadmap.id),
         loadAnalytics(selectedRoadmap.id),
+        getRoadmaps(),
       ])
-
-      const updatedRoadmaps = await getRoadmaps()
 
       setRoadmaps(updatedRoadmaps)
 
-      const updated = updatedRoadmaps.find((r) => r.id === selectedRoadmap.id)
+      const updatedRoadmap = updatedRoadmaps.find(
+        (r) => r.id === selectedRoadmap.id
+      )
 
-      if (updated) {
-        setSelectedRoadmap(updated)
+      if (updatedRoadmap) {
+        setSelectedRoadmap(updatedRoadmap)
       }
     } catch (error) {
       console.error("Failed to delete task", error)

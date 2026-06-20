@@ -17,6 +17,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,14 +29,10 @@ public class RoadmapService {
     private final UserRepository userRepository;
 
     private User getCurrentUser() {
-        String username = SecurityContextHolder
+        return (User) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
-                .getName();
-
-        return userRepository.findByUsername(username)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("User not found"));
+                .getPrincipal();
     }
 
     private Roadmap getOwnedRoadmap(Long roadmapId) {
@@ -70,9 +68,21 @@ public class RoadmapService {
 
         User user = getCurrentUser();
 
-        return roadmapRepository.findByUser(user)
+        List<Roadmap> roadmaps = roadmapRepository.findByUser(user);
+
+        Map<Long, int[]> statsByRoadmapId = taskRepository
+                .getTaskStatsByRoadmapForUser(user.getId())
                 .stream()
-                .map(this::mapRoadmap)
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> new int[] {
+                                ((Number) row[1]).intValue(),
+                                ((Number) row[2]).intValue()
+                        }
+                ));
+
+        return roadmaps.stream()
+                .map(roadmap -> mapRoadmap(roadmap, statsByRoadmapId))
                 .toList();
     }
 
@@ -168,6 +178,24 @@ public class RoadmapService {
         getOwnedRoadmap(task.getRoadmap().getId());
 
         taskRepository.delete(task);
+    }
+
+    private RoadmapResponse mapRoadmap(Roadmap roadmap, Map<Long, int[]> statsByRoadmapId) {
+
+        int[] stats = statsByRoadmapId.getOrDefault(roadmap.getId(), new int[] {0, 0});
+        int totalTasks = stats[0];
+        int completedTasks = stats[1];
+
+        int progress = totalTasks == 0 ? 0 : (completedTasks * 100) / totalTasks;
+
+        return RoadmapResponse.builder()
+                .id(roadmap.getId())
+                .title(roadmap.getTitle())
+                .description(roadmap.getDescription())
+                .totalTasks(totalTasks)
+                .completedTasks(completedTasks)
+                .progress(progress)
+                .build();
     }
 
     private RoadmapResponse mapRoadmap(Roadmap roadmap) {

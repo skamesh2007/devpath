@@ -62,8 +62,11 @@ public class LeetCodeService {
     // ── Fetch stats for the logged-in user's stored LeetCode username ─────────
     public LeetCodeStats getStatsForCurrentUser(User user) {
         return leetCodeStatsRepository
-                .findByUser(user)
+                .findByUsername(user.getLeetCodeUsername())
                 .orElse(null);
+
+
+
     }
 
     // ── Fetch stats by any public LeetCode username ───────────────────────────
@@ -169,6 +172,7 @@ public class LeetCodeService {
         stats.setMediumSolved(response.getMediumSolved());
         stats.setHardSolved(response.getHardSolved());
         stats.setLastUpdated(LocalDateTime.now());
+        stats.setUsername(response.getUsername());
 
         leetCodeStatsRepository.save(stats);
     }

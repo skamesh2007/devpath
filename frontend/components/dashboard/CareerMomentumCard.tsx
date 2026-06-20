@@ -91,7 +91,9 @@ export default function CareerMomentumCard({
             </div>
             <div className="min-w-0">
               <p className="text-sm text-muted-foreground">Strongest Roadmap</p>
-              <p className="truncate font-semibold">{momentum.strongestRoadmap}</p>
+              <p className="truncate font-semibold">
+                {momentum.strongestRoadmap}
+              </p>
               <p className="text-sm text-muted-foreground">
                 {momentum.strongestRoadmapProgress}% complete
               </p>
@@ -104,7 +106,9 @@ export default function CareerMomentumCard({
             </div>
             <div className="min-w-0">
               <p className="text-sm text-muted-foreground">Weakest Roadmap</p>
-              <p className="truncate font-semibold">{momentum.weakestRoadmap}</p>
+              <p className="truncate font-semibold">
+                {momentum.weakestRoadmap}
+              </p>
               <p className="text-sm text-muted-foreground">
                 {momentum.weakestRoadmapProgress}% complete
               </p>
@@ -139,13 +143,23 @@ export default function CareerMomentumCard({
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-500/10">
               <Flag className="h-4 w-4 text-violet-500" />
             </div>
-            <div className="min-w-0">
-              <p className="text-sm text-muted-foreground">Closest To Finish</p>
-              <p className="truncate font-semibold">
-                {momentum.nearestCompletionRoadmap}
-              </p>
+
+            <div className="min-w-0 space-y-1">
               <p className="text-sm text-muted-foreground">
-                {momentum.nearestCompletionPercentage}% complete
+                Streak:{" "}
+                <span className="font-semibold text-foreground">5 days</span>
+              </p>
+
+              <p className="text-sm text-muted-foreground">
+                Tasks this week:{" "}
+                <span className="font-semibold text-foreground">3</span>
+              </p>
+
+              <p className="text-sm text-muted-foreground">
+                Last Activity:{" "}
+                <span className="font-semibold text-foreground">
+                  2 hours ago
+                </span>
               </p>
             </div>
           </div>

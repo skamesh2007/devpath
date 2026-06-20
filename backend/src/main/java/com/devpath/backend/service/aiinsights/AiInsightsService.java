@@ -43,12 +43,8 @@ public class AiInsightsService {
         AIInsightsResponse insights;
 
         try {
-            long start = System.currentTimeMillis();
             String responseText = aiTextGenerationService.generate(prompt);
-            log.info(
-                    "Pure AI time: {} ms",
-                    System.currentTimeMillis() - start
-            );
+
             insights = aiJsonResponseParser.parseObject(
                     responseText,
                     AIInsightsResponse.class

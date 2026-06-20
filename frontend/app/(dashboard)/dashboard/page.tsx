@@ -5,10 +5,9 @@ import { useEffect, useState } from "react"
 import { useAuthStore } from "@/store/authStore"
 import { getDashboard } from "@/services/dashboardService"
 
-import CareerProgressCard from "@/components/dashboard/CareerProgressCard"
 import AICoachCard from "@/components/dashboard/AICoachCard"
 
-import { getInsights } from "@/services/aiService"
+import { getSavedInsights } from "@/services/aiService"
 import { AIInsightsResponse } from "@/types/ai"
 
 import CareerMomentumCard from "@/components/dashboard/CareerMomentumCard"
@@ -55,28 +54,19 @@ export default function DashboardPage() {
   const [momentum, setMomentum] = useState<CareerMomentumResponse | null>(null)
 
   useEffect(() => {
-    Promise.all([getDashboard(), getCareerMomentum()])
-      .then(([dashboardData, momentumData]) => {
+    console.log("Dashboard effect fired")
+
+    Promise.all([getDashboard(), getCareerMomentum(), getSavedInsights()])
+      .then(([dashboardData, momentumData, insightsData]) => {
         setDashboard(dashboardData)
         setMomentum(momentumData)
+        setInsights(insightsData)
       })
       .catch(console.error)
       .finally(() => setDashboardLoading(false))
   }, [])
 
-  const loadInsights = async () => {
-    try {
-      setInsightsLoading(true)
-
-      const data = await getInsights()
-
-      setInsights(data)
-    } catch (error) {
-      console.error("Failed to load insights", error)
-    } finally {
-      setInsightsLoading(false)
-    }
-  }
+  console.log(insights)
 
   const stats = dashboard
     ? [
@@ -86,6 +76,7 @@ export default function DashboardPage() {
           description: `${dashboard.completedTasks} of ${dashboard.totalTasks} tasks completed`,
           icon: Target,
           progress: dashboard.roadmapProgress,
+          isProgressIndeterminate: false,
         },
         {
           title: "LeetCode Solved",
@@ -93,6 +84,7 @@ export default function DashboardPage() {
           description: "Problems solved",
           icon: Code2,
           progress: 100,
+          isProgressIndeterminate: true,
         },
         {
           title: "Completed Tasks",
@@ -103,6 +95,7 @@ export default function DashboardPage() {
             dashboard.totalTasks === 0
               ? 0
               : (dashboard.completedTasks * 100) / dashboard.totalTasks,
+          isProgressIndeterminate: false,
         },
         {
           title: "Active Projects",
@@ -110,6 +103,7 @@ export default function DashboardPage() {
           description: "Projects in progress",
           icon: Rocket,
           progress: 0,
+          isProgressIndeterminate: true,
         },
       ]
     : []
@@ -133,11 +127,10 @@ export default function DashboardPage() {
               Dashboard
             </Badge>
           </div>
-
+          pow
           <h1 className="truncate text-2xl font-bold tracking-tight sm:text-3xl">
             Welcome, {user?.username ?? "User"}!
           </h1>
-
           <p className="truncate text-sm text-muted-foreground">
             {user?.email ?? "your email"} • Your career progress at a glance
           </p>
@@ -163,35 +156,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => {
-          const Icon = stat.icon
-
-          return (
-            <Card key={stat.title} className="rounded-2xl">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {stat.title}
-                </CardTitle>
-
-                <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-              </CardHeader>
-
-              <CardContent className="space-y-3">
-                <div className="text-2xl font-bold">{stat.value}</div>
-
-                <p className="text-xs text-muted-foreground">
-                  {stat.description}
-                </p>
-
-                <Progress value={stat.progress} className="h-2" />
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-
+      {/* Continue Learning */}
       <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle>Continue Learning</CardTitle>
@@ -220,16 +185,44 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
+      {/* Stats */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => {
+          const Icon = stat.icon
+
+          return (
+            <Card key={stat.title} className="rounded-2xl">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  {stat.title}
+                </CardTitle>
+
+                <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+              </CardHeader>
+
+              <CardContent className="space-y-3">
+                <div className="text-2xl font-bold">{stat.value}</div>
+
+                <p className="text-xs text-muted-foreground">
+                  {stat.description}
+                </p>
+
+                {stat.isProgressIndeterminate ? null : (
+                  <Progress value={stat.progress} className="h-2" />
+                )}
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+
       {momentum && <CareerMomentumCard momentum={momentum} />}
 
       <AICoachCard
         insightsLoading={insightsLoading}
         insights={insights}
         router={router}
-        onGenerateInsights={loadInsights}
       />
-
-      <CareerProgressCard dashboard={dashboard!} />
     </div>
   )
 }

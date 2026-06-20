@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +39,14 @@ public class CareerMomentumService {
                     .build();
         }
 
+        Map<Long, List<RoadmapTask>> tasksByRoadmapId =
+                roadmapTaskRepository
+                        .findAllByRoadmapUserId(currentUser.getId())
+                        .stream()
+                        .collect(Collectors.groupingBy(
+                                task -> task.getRoadmap().getId()
+                        ));
+
         Roadmap strongestRoadmap = null;
         Roadmap weakestRoadmap = null;
         Roadmap nearestCompletionRoadmap = null;
@@ -46,15 +56,15 @@ public class CareerMomentumService {
         int nearestProgress = -1;
 
         int totalOverdueTasks = 0;
-
         int totalCompletedTasks = 0;
         int totalTasks = 0;
 
         for (Roadmap roadmap : roadmaps) {
 
             List<RoadmapTask> tasks =
-                    roadmapTaskRepository.findByRoadmap_Id(
-                            roadmap.getId()
+                    tasksByRoadmapId.getOrDefault(
+                            roadmap.getId(),
+                            List.of()
                     );
 
             int roadmapTotalTasks = tasks.size();

@@ -1,5 +1,7 @@
 import { LeetCodeStatsResponse } from "@/types/leetcode"
 import { SiLeetcode } from "react-icons/si"
+import { Button } from "@/components/ui/button"
+import { refreshLeetCodeStats } from "@/services/leetcodeService"
 
 export default function LeetCoderHeader(stats: LeetCodeStatsResponse) {
   return (
@@ -18,6 +20,7 @@ export default function LeetCoderHeader(stats: LeetCodeStatsResponse) {
               #{stats?.ranking}
             </span>
           </p>
+          <Button onClick={() => refreshLeetCodeStats()}>Refresh Stats</Button>
         </div>
       </div>
     </div>

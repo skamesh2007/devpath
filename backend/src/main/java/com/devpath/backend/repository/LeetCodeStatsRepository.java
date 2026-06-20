@@ -8,6 +8,8 @@ import java.util.Optional;
 
 public interface LeetCodeStatsRepository
         extends JpaRepository<LeetCodeStats, Long> {
-
     Optional<LeetCodeStats> findByUser(User user);
+
+    Optional<LeetCodeStats> findByUsername(String username);
+
 }

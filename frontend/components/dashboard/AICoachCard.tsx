@@ -22,15 +22,17 @@ type AICoachCardProps = {
   insightsLoading: boolean
   insights: AIInsightsResponse | null
   router: ReturnType<typeof useRouter>
-  onGenerateInsights: () => void
 }
 
 export default function AICoachCard({
   insightsLoading,
   insights,
   router,
-  onGenerateInsights,
 }: AICoachCardProps) {
+
+
+
+
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       {/* AI Career Coach */}
@@ -53,8 +55,9 @@ export default function AICoachCard({
               <Button
                 size="sm"
                 className="min-w-[104px] self-start sm:self-auto"
-                onClick={onGenerateInsights}
+                onClick={() => router.push("/insights")}
                 disabled={insightsLoading || !!insights}
+                hidden={Boolean(insights)}
               >
                 {insightsLoading
                   ? "Generating…"
@@ -116,34 +119,6 @@ export default function AICoachCard({
                 </p>
               </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* AI Features */}
-      <div>
-        <Card className="h-full rounded-2xl">
-          <CardHeader>
-            <CardTitle>AI Features</CardTitle>
-          </CardHeader>
-
-          <CardContent className="space-y-3">
-            <Button
-              className="w-full justify-start gap-2"
-              onClick={() => router.push("/roadmap/generate")}
-            >
-              <Rocket className="h-4 w-4" />
-              Generate AI Roadmap
-            </Button>
-
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-2"
-              onClick={() => router.push("/insights")}
-            >
-              <Sparkles className="h-4 w-4" />
-              View AI Insights
-            </Button>
           </CardContent>
         </Card>
       </div>

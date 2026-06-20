@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -39,6 +41,11 @@ public class AIInsightsManagerService {
 
         List<Roadmap> roadmaps = roadmapRepository.findByUser(user);
 
+        Map<Long, List<RoadmapTask>> tasksByRoadmapId =
+                roadmapTaskRepository.findAllByRoadmapUserId(user.getId())
+                        .stream()
+                        .collect(Collectors.groupingBy(t -> t.getRoadmap().getId()));
+
         StringBuilder roadmapSummary = new StringBuilder();
 
         int totalTasks = 0;
@@ -50,7 +57,7 @@ public class AIInsightsManagerService {
         for (Roadmap roadmap : roadmaps) {
 
             List<RoadmapTask> tasks =
-                    roadmapTaskRepository.findByRoadmap(roadmap);
+                    tasksByRoadmapId.getOrDefault(roadmap.getId(), List.of());
 
             int roadmapTotal = tasks.size();
 

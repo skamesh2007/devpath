@@ -52,4 +52,20 @@ public interface RoadmapTaskRepository extends JpaRepository<RoadmapTask, Long> 
       AND t.completed = false
 """)
     long countPendingTasks(Long userId);
+
+    @Query("""
+    SELECT t
+    FROM RoadmapTask t
+    WHERE t.roadmap.user.id = :userId
+""")
+    List<RoadmapTask> findAllByRoadmapUserId(Long userId);
+
+
+    @Query("""
+    SELECT t.roadmap.id, COUNT(t), SUM(CASE WHEN t.completed = true THEN 1L ELSE 0L END)
+    FROM RoadmapTask t
+    WHERE t.roadmap.user.id = :userId
+    GROUP BY t.roadmap.id
+""")
+    List<Object[]> getTaskStatsByRoadmapForUser(Long userId);
 }

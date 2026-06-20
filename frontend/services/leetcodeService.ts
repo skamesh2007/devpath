@@ -32,3 +32,8 @@ export const getLeetCodeStatsByUsername =
     const response = await api.get(`/leetcode/${username}`);
     return response.data;
   };
+
+export const refreshLeetCodeStats = async (): Promise<LeetCodeStatsResponse> => {
+  const response = await api.post("/leetcode/refresh");
+  return response.data;
+}

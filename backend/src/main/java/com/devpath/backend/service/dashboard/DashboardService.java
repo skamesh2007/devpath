@@ -1,7 +1,7 @@
 package com.devpath.backend.service.dashboard;
 
 import com.devpath.backend.dto.dashboard.DashboardResponse;
-import com.devpath.backend.dto.leetcode.LeetCodeStatsResponse;
+import com.devpath.backend.entity.LeetCodeStats;
 import com.devpath.backend.entity.User;
 import com.devpath.backend.repository.RoadmapTaskRepository;
 import com.devpath.backend.repository.UserRepository;
@@ -19,32 +19,23 @@ public class DashboardService {
     private final LeetCodeService leetCodeService;
 
     private User getCurrentUser() {
-
-        String username = SecurityContextHolder
+        return (User) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
-                .getName();
-
-        return userRepository.findByUsername(username)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("User not found"));
+                .getPrincipal();
     }
 
     public DashboardResponse getDashboard() {
 
         User user = getCurrentUser();
 
-
         int totalTasks = Math.toIntExact(
                 roadmapTaskRepository.countTotalTasks(user.getId())
         );
 
-
         int completedTasks = Math.toIntExact(
                 roadmapTaskRepository.countCompletedTasks(user.getId())
         );
-
-
 
         int roadmapProgress = totalTasks == 0
                 ? 0
@@ -55,12 +46,12 @@ public class DashboardService {
         int leetcodeSolved = 0;
 
         try {
-            LeetCodeStatsResponse stats =
-                    leetCodeService.getStatsForCurrentUser(
-                            user.getUsername()
-                    );
+            LeetCodeStats stats = leetCodeService.getStatsForCurrentUser(user);
 
-            leetcodeSolved = stats.getTotalSolved();
+
+            if (stats != null) {
+                leetcodeSolved = stats.getTotalSolved();
+            }
 
         } catch (Exception ignored) {
             // User may not have linked a LeetCode account yet
