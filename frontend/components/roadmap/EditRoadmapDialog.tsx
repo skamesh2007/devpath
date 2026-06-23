@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Pencil } from "lucide-react";
+import { Pencil, Loader2 } from "lucide-react";
 
 import {
   Dialog,
@@ -95,11 +95,15 @@ export default function EditRoadmapDialog({
             }
           />
 
-          <Button
-            onClick={handleSubmit}
-            disabled={loading}
-          >
-            Save Changes
+          <Button onClick={handleSubmit} disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
           </Button>
         </div>
       </DialogContent>

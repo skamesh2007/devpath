@@ -17,7 +17,7 @@ import { Progress } from "@/components/ui/progress"
 import CreateRoadmapDialog from "@/components/roadmap/CreateRoadmapDialog"
 import CreateTaskDialog from "@/components/roadmap/CreateTaskDialog"
 
-import { Trash2 } from "lucide-react"
+import { Trash2, Loader2 } from "lucide-react"
 import { deleteTask } from "@/services/taskService"
 import DeleteConfirmDialog from "@/components/roadmap/DeleteConfirmDialog"
 
@@ -40,6 +40,8 @@ export default function RoadmapPage() {
     null
   )
   const [loading, setLoading] = useState(true)
+  const [deletingTaskIds, setDeletingTaskIds] = useState<Set<number>>(new Set())
+  const [deletingRoadmapIds, setDeletingRoadmapIds] = useState<Set<number>>(new Set())
 
   const loadTasks = useCallback(async (roadmapId: number) => {
     try {
@@ -116,51 +118,58 @@ export default function RoadmapPage() {
   }
 
   const handleDeleteRoadmap = async (roadmapId: number) => {
-    try {
-      await deleteRoadmap(roadmapId)
+  try {
+    setDeletingRoadmapIds((prev) => new Set(prev).add(roadmapId))
+    await deleteRoadmap(roadmapId)
 
-      const updatedRoadmaps = await getRoadmaps()
+    const updatedRoadmaps = await getRoadmaps()
+    setRoadmaps(updatedRoadmaps)
 
-      setRoadmaps(updatedRoadmaps)
-
-      if (updatedRoadmaps.length > 0) {
-        setSelectedRoadmap(updatedRoadmaps[0])
-
-        await loadTasks(updatedRoadmaps[0].id)
-      } else {
-        setSelectedRoadmap(null)
-        setTasks([])
-      }
-    } catch (error) {
-      console.error("Failed to delete roadmap", error)
+    if (updatedRoadmaps.length > 0) {
+      setSelectedRoadmap(updatedRoadmaps[0])
+      await loadTasks(updatedRoadmaps[0].id)
+    } else {
+      setSelectedRoadmap(null)
+      setTasks([])
     }
+  } catch (error) {
+    console.error("Failed to delete roadmap", error)
+  } finally {
+    setDeletingRoadmapIds((prev) => {
+      const next = new Set(prev)
+      next.delete(roadmapId)
+      return next
+    })
   }
+}
 
   const handleDeleteTask = async (taskId: number) => {
-    try {
-      await deleteTask(taskId)
+  try {
+    setDeletingTaskIds((prev) => new Set(prev).add(taskId))
+    await deleteTask(taskId)
 
-      if (!selectedRoadmap) return
+    if (!selectedRoadmap) return
 
-      const [, , updatedRoadmaps] = await Promise.all([
-        loadTasks(selectedRoadmap.id),
-        loadAnalytics(selectedRoadmap.id),
-        getRoadmaps(),
-      ])
+    const [, , updatedRoadmaps] = await Promise.all([
+      loadTasks(selectedRoadmap.id),
+      loadAnalytics(selectedRoadmap.id),
+      getRoadmaps(),
+    ])
 
-      setRoadmaps(updatedRoadmaps)
+    setRoadmaps(updatedRoadmaps)
 
-      const updatedRoadmap = updatedRoadmaps.find(
-        (r) => r.id === selectedRoadmap.id
-      )
-
-      if (updatedRoadmap) {
-        setSelectedRoadmap(updatedRoadmap)
-      }
-    } catch (error) {
-      console.error("Failed to delete task", error)
-    }
+    const updatedRoadmap = updatedRoadmaps.find((r) => r.id === selectedRoadmap.id)
+    if (updatedRoadmap) setSelectedRoadmap(updatedRoadmap)
+  } catch (error) {
+    console.error("Failed to delete task", error)
+  } finally {
+    setDeletingTaskIds((prev) => {
+      const next = new Set(prev)
+      next.delete(taskId)
+      return next
+    })
   }
+}
 
   if (loading) {
     return <RoadmapLoading />
@@ -197,9 +206,8 @@ export default function RoadmapPage() {
             <button
               key={roadmap.id}
               onClick={() => selectRoadmap(roadmap)}
-              className={`w-full rounded-xl border p-4 text-left transition hover:bg-muted ${
-                selectedRoadmap?.id === roadmap.id ? "border-primary" : ""
-              }`}
+              className={`w-full rounded-xl border p-4 text-left transition hover:bg-muted ${selectedRoadmap?.id === roadmap.id ? "border-primary" : ""
+                }`}
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -218,17 +226,21 @@ export default function RoadmapPage() {
                     {roadmap.progress}%
                   </span>
 
-                  <DeleteConfirmDialog
-                    title="Delete Roadmap"
-                    description="This roadmap and all its tasks will be permanently deleted."
-                    onConfirm={() => handleDeleteRoadmap(roadmap.id)}
-                    trigger={
-                      <Trash2
-                        className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-destructive"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    }
-                  />
+                  {deletingRoadmapIds.has(roadmap.id) ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  ) : (
+                    <DeleteConfirmDialog
+                      title="Delete Roadmap"
+                      description="This roadmap and all its tasks will be permanently deleted."
+                      onConfirm={() => handleDeleteRoadmap(roadmap.id)}
+                      trigger={
+                        <Trash2
+                          className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-destructive"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      }
+                    />
+                  )}
                 </div>
               </div>
 
@@ -323,14 +335,18 @@ export default function RoadmapPage() {
                     }}
                   />
 
-                  <DeleteConfirmDialog
-                    title="Delete Task"
-                    description="This task will be permanently deleted."
-                    onConfirm={() => handleDeleteTask(task.id)}
-                    trigger={
-                      <Trash2 className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-destructive" />
-                    }
-                  />
+                  {deletingTaskIds.has(task.id) ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  ) : (
+                    <DeleteConfirmDialog
+                      title="Delete Task"
+                      description="This task will be permanently deleted."
+                      onConfirm={() => handleDeleteTask(task.id)}
+                      trigger={
+                        <Trash2 className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-destructive" />
+                      }
+                    />
+                  )}
                 </div>
               </div>
             </div>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Pencil } from "lucide-react";
+import { Pencil, Loader2 } from "lucide-react";
 
 import {
   Dialog,
@@ -34,6 +34,7 @@ export default function EditTaskDialog({
   onUpdated,
 }: Props) {
   const [open, setOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false)
 
   const [title, setTitle] =
     useState(initialTitle);
@@ -42,16 +43,15 @@ export default function EditTaskDialog({
     useState(initialDescription);
 
   const handleSubmit = async () => {
-    await updateTask(taskId, {
-      title,
-      description,
-      completed,
-    });
-
-    await onUpdated();
-
-    setOpen(false);
-  };
+    try {
+      setIsSaving(true)
+      await updateTask(taskId, { title, description, completed })
+      await onUpdated()
+      setOpen(false)
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   return (
     <Dialog
@@ -86,8 +86,15 @@ export default function EditTaskDialog({
             }
           />
 
-          <Button onClick={handleSubmit}>
-            Save Changes
+          <Button onClick={handleSubmit} disabled={isSaving}>
+            {isSaving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
           </Button>
         </div>
       </DialogContent>
